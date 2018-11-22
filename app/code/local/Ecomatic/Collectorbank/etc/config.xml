@@ -235,7 +235,7 @@
                 <allowspecific>1</allowspecific>
                 <specificcountry>NO,SE,DK,DE,FI</specificcountry>
                 <allow_credit>0</allow_credit>
-                <separate_address>0</separate_address>
+                <separate_address>1</separate_address>
 				<title>Collector Checkout</title>
 				<shippingmethod>flatrate_flatrate</shippingmethod>
             </collectorbank_invoice>

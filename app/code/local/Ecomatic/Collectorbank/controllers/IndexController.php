@@ -1,6 +1,8 @@
 <?php
 class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_Action{
 	
+    protected $ns = 'http://schemas.ecommerce.collector.se/v30/InvoiceService';
+    
 	public function indexAction(){
 		$cart = Mage::getSingleton('checkout/cart');
 		$messages = array();
@@ -185,17 +187,15 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
 			
 			//check for selected shipping method
 			$shippingMethod = $session->getSelectedShippingmethod();
-			if(empty($shippingMethod)){
-				$allShippingData = Mage::getModel('collectorbank/config')->getActiveShppingMethods($quote);
-				$orderItems = $orderDetails['order']['items'];
-				foreach($orderItems as $oitem){
-					//echo "<pre>";print_r($oitem);
-					if(in_array($oitem['id'], $allShippingData)) {
-						$shippingMethod = $oitem['id'];						
-						break;
-					}
-				}
-			}
+            $allShippingData = Mage::getModel('collectorbank/config')->getActiveShppingMethods($quote);
+            $orderItems = $orderDetails['order']['items'];
+            foreach($orderItems as $oitem){
+                //echo "<pre>";print_r($oitem);
+                if(in_array($oitem['id'], $allShippingData)) {
+                    $shippingMethod = $oitem['id'];						
+                    break;
+                }
+            }
 			
 			if(empty($shippingMethod)){
 				$shippingMethod = "freeshipping_freeshipping";
@@ -290,7 +290,43 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
 					$result['error'] = true;
 					$result['error_messages'] = $e->getMessage();    
 					Mage::log('Order creation is failed for invoice no '.$orderDetails['purchase']['purchaseIdentifier'] ."Error is --> ".Mage::helper('core')->jsonEncode($result), null, $logFileName);		
-					$this->loadLayout();
+					if (isset($quote)){
+                        $helper = Mage::helper('collectorbank');
+                        $client = $helper->getSoapClient();
+                        $request = array(
+                            'StoreId' => $helper->getModuleConfig('general/store_id_b2c') ? $helper->getModuleConfig('general/store_id_b2c') : null,
+                            'CorrelationId' => $quote->getReservedOrderId(),
+                            'CountryCode' => $helper->getCountryCode(),
+                            'InvoiceNo' => $orderDetails['purchase']['purchaseIdentifier'],
+                        );
+                        if($helper->guessCustomerType($billingAddressData) == "company") {
+                            $request['StoreId'] = $helper->getModuleConfig('general/store_id_b2b');
+                        }
+                        $headers = array();
+                        $headers['Username'] = Mage::getModel('collectorbank/config')->getPrivateUsername();
+                        $headers['Password'] = Mage::getModel('collectorbank/config')->getPrivateSecretkey();
+                        $headerList = array();
+                        foreach ($headers as $k => $v) {
+                            $headerList[] = new SoapHeader($this->ns, $k, $v);
+                        }
+                        $client->__setSoapHeaders($headerList);
+                        try {
+                            $request = array('CancelInvoiceRequest' => $request);
+                            $response = $client->__soapCall('CancelInvoice', $request);
+                            $session->unsPrivateId();
+                            $session->unsReference();
+                            Mage::getSingleton('core/session')->addError($e->getMessage()); 
+                            $this->_redirect("/");
+                        }
+                        catch (Exception $er){
+                            Mage::log("Cancel Order Failed. Error is --> ". $er->getMessage() . "\n" . $er->getTraceAsString(), null, $logFileName);
+                            $session->unsPrivateId();
+                            $session->unsReference();
+                            Mage::getSingleton('core/session')->addError($e->getMessage()); 
+                            $this->_redirect("/");
+                        }
+                    }
+                    $this->loadLayout();
 					$block = Mage::app()->getLayout()->getBlock('collectorbank_success');
 					if ($block){
 						if($orderDetails['purchase']['purchaseIdentifier']){
@@ -352,9 +388,10 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
 		if($orderDetails){
 			$email = $orderDetails['customer']['email'];
 			$mobile = $orderDetails['customer']['mobilePhoneNumber'];
-			$firstName = $orderDetails['customer']['deliveryAddress']['firstName'];
-			$lastName = $orderDetails['customer']['deliveryAddress']['lastName'];
-			
+			$firstNameS = $orderDetails['customer']['deliveryAddress']['firstName'];
+			$lastNameS = $orderDetails['customer']['deliveryAddress']['lastName'];
+			$firstNameB = $orderDetails['customer']['billingAddress']['firstName'];
+            $lastNameB = $orderDetails['customer']['billingAddress']['lastName'];
 			
 			if($orderDetails['customer']['deliveryAddress']['country'] == 'Sverige'){	
 				$scountry_id = "SE";
@@ -390,9 +427,9 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
 			$billingAddress = array(
 				'customer_address_id' => '',
 				'prefix' => '',
-				'firstname' => $firstName,
+				'firstname' => $firstNameB,
 				'middlename' => '',
-				'lastname' => $lastName,
+				'lastname' => $lastNameB,
 				'suffix' => '',
 				'company' => $orderDetails['customer']['billingAddress']['coAddress'], 
 				'street' => $orderDetails['customer']['billingAddress']['address'],
@@ -409,9 +446,9 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
 			$shippingAddress = array(
 				'customer_address_id' => '',
 				'prefix' => '',
-				'firstname' => $firstName,
+				'firstname' => $firstNameS,
 				'middlename' => '',
-				'lastname' => $lastName,
+				'lastname' => $lastNameS,
 				'suffix' => '',
 				'company' => $orderDetails['customer']['deliveryAddress']['coAddress'], 
 				'street' => $orderDetails['customer']['deliveryAddress']['address'],
@@ -433,8 +470,8 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
 					$customer = Mage::getModel('customer/customer');			
 					$customer->setWebsiteId($website->getId())
 							 ->setStore($store)
-							 ->setFirstname($firstName)
-							 ->setLastname($lastName)
+							 ->setFirstname($firstNameS)
+							 ->setLastname($lastNameS)
 							 ->setEmail($email);  
 					try {
 					   
@@ -484,13 +521,11 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
 			$shippingMethod = $session->getSelectedShippingmethod();
 			$allShippingData = Mage::getModel('collectorbank/config')->getActiveShppingMethods($quote);
 			$orderItems = $orderDetails['order']['items'];
-			if(empty($shippingMethod)){
-				foreach($orderItems as $oitem){
-					//echo "<pre>";print_r($oitem);
-					if(in_array($oitem['id'], $allShippingData)) {
-						$shippingMethod = $oitem['id'];
-						break;
-					}
+			foreach($orderItems as $oitem){
+				//echo "<pre>";print_r($oitem);
+				if(in_array($oitem['id'], $allShippingData)) {
+					$shippingMethod = $oitem['id'];
+					break;
 				}
 			}
 			if(empty($shippingMethod)){
@@ -510,10 +545,6 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
 					break;
 				}
 			}
-			
-			
-			
-			
 			
 			
 			
@@ -607,13 +638,13 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
 				$oldShippingTaxAmount = $order->getShippingTaxAmount();
 				if ($shippingTax != 0){
 					$order->setShippingAmount($shippingPrice/($shippingTax/100+1));
-	                                $order->setBaseShippingAmount($shippingPrice/($shippingTax/100+1));
+                    $order->setBaseShippingAmount($shippingPrice/($shippingTax/100+1));
 					$order->setShippingTaxAmount($shippingPrice-($shippingPrice/($shippingTax/100+1)));
-                                        $order->setBaseShippingTaxAmount($shippingPrice-($shippingPrice/($shippingTax/100+1)));
+                    $order->setBaseShippingTaxAmount($shippingPrice-($shippingPrice/($shippingTax/100+1)));
 				}
 				else {
 					$order->setShippingAmount($shippingPrice);
-	                                $order->setBaseShippingAmount($shippingPrice);
+                    $order->setBaseShippingAmount($shippingPrice);
 					$order->setShippingTaxAmount(0);
 					$order->setBaseShippingTaxAmount(0);
 				}
@@ -669,7 +700,43 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
 					$result['error'] = true;
 					$result['error_messages'] = $e->getMessage();    
 					Mage::log('Order creation is failed for invoice no '.$orderDetails['purchase']['purchaseIdentifier'] ." Error is --> ". Mage::helper('core')->jsonEncode($result) . "\n" . $e->getTraceAsString(), null, $logFileName);		
-					//Mage::app()->getResponse()->setBody(Mage::helper('core')->jsonEncode($result));
+					if (isset($quote)){
+                        $helper = Mage::helper('collectorbank');
+                        $client = $helper->getSoapClient();
+                        $request = array(
+                            'StoreId' => $helper->getModuleConfig('general/store_id_b2c') ? $helper->getModuleConfig('general/store_id_b2c') : null,
+                            'CorrelationId' => $quote->getReservedOrderId(),
+                            'CountryCode' => $helper->getCountryCode(),
+                            'InvoiceNo' => $orderDetails['purchase']['purchaseIdentifier'],
+                        );
+                        if($helper->guessCustomerType($billingAddressData) == "company") {
+                            $request['StoreId'] = $helper->getModuleConfig('general/store_id_b2b');
+                        }
+                        $headers = array();
+                        $headers['Username'] = Mage::getModel('collectorbank/config')->getPrivateUsername();
+                        $headers['Password'] = Mage::getModel('collectorbank/config')->getPrivateSecretkey();
+                        $headerList = array();
+                        foreach ($headers as $k => $v) {
+                            $headerList[] = new SoapHeader($this->ns, $k, $v);
+                        }
+                        $client->__setSoapHeaders($headerList);
+                        try {
+                            $request = array('CancelInvoiceRequest' => $request);
+                            $response = $client->__soapCall('CancelInvoice', $request);
+                            $session->unsPrivateId();
+                            $session->unsReference();
+                            Mage::getSingleton('core/session')->addError('test'); 
+                            $this->_redirect("/");
+                        }
+                        catch (Exception $er){
+                            Mage::log("Cancel Order Failed. Error is --> ". $er->getMessage() . "\n" . $er->getTraceAsString(), null, $logFileName);
+                            $session->unsPrivateId();
+                            $session->unsReference();
+                            Mage::getSingleton('core/session')->addError($e->getMessage()); 
+                            $this->_redirect("/");
+                        }
+                    }
+                    //Mage::app()->getResponse()->setBody(Mage::helper('core')->jsonEncode($result));
 					$this->loadLayout();
 					$block = Mage::app()->getLayout()->getBlock('collectorbank_success');
 					if ($block){

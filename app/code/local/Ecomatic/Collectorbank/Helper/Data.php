@@ -815,7 +815,7 @@ class Ecomatic_Collectorbank_Helper_Data extends Mage_Core_Helper_Abstract
         );
         if($this->guessCustomerType($payment->getOrder()->getBillingAddress()) == "company") {
             $request['StoreId'] = $this->getModuleConfig('general/store_id_b2b');
-        } 
+        }
         // We don't want to send StoreId at all if it hasn't been set.
         if (!isset($request['StoreId']) || !$request['StoreId']) {
             unset($request['StoreId']);
