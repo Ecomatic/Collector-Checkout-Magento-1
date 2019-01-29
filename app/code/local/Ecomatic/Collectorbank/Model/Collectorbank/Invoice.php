@@ -153,65 +153,64 @@ class Ecomatic_Collectorbank_Model_Collectorbank_Invoice extends Mage_Payment_Mo
 
         $originalIncrementId = $order->getOriginalIncrementId();
         $newIncrementId = $order->getIncrementId();
-
+        if ($order->getQuote()->getData('is_iframe')){
+            return $this;
+        }
         if ($originalIncrementId != null and $originalIncrementId != $newIncrementId) {
             $this->replaceInvoice($payment, $amount);
         } 
-				$session = Mage::getSingleton('checkout/session');
-				$quote = $session->getQuote();
-				$response = $quote->getResponse();
-				
-				$colpayment_method = ""; 
-				if (array_key_exists('paymentMethod', $response['purchase'])){
-					$colpayment_method = $response['purchase']['paymentMethod'];
-				}
-				$colpayment_details = json_encode($response['purchase']);
-				$payment->setCollPaymentMethod($colpayment_method);
-				$payment->setCollPaymentDetails($colpayment_details );
-			
-				
-				$result['invoice_status'] = $response['status'];
-				$result['invoice_no'] = $response['purchase']['purchaseIdentifier'];
-				$result['total_amount'] =  $response['order']['totalAmount'];
-				
+        $session = Mage::getSingleton('checkout/session');
+        $quote = $order->getQuote();
+        $response = json_decode($quote->getData('collector_response'));
+        $colpayment_method = "";
+        if (array_key_exists('paymentMethod', $response['purchase'])){
+            $colpayment_method = $response['purchase']['paymentMethod'];
+        }
+        $colpayment_details = json_encode($response['purchase']);
+        $payment->setCollPaymentMethod($colpayment_method);
+        $payment->setCollPaymentDetails($colpayment_details );
 
-           
-                $payment->setAdditionalInformation(self::COLLECTOR_INVOICE_NO, isset($result['invoice_no']) ? $result['invoice_no'] : '');
-                $payment->setAdditionalInformation(self::COLLECTOR_PAYMENT_REF, isset($result['payment_reference']) ? $result['payment_reference'] : '');
-                $payment->setAdditionalInformation(self::COLLECTOR_LOWEST_AMOUNT_TO_PAY, isset($result['lowest_amount_to_pay']) ? $result['lowest_amount_to_pay'] : '');
-                $payment->setAdditionalInformation(self::COLLECTOR_TOTAL_AMOUNT, isset($result['total_amount']) ? $result['total_amount'] : '');
-                $payment->setAdditionalInformation(self::COLLECTOR_DUE_DATE, isset($result['due_date']) ? $result['due_date'] : '');
-                $payment->setAdditionalInformation(self::COLLECTOR_AVAILABLE_RESERVATION_AMOUNT, isset($result['available_reservation_amount']) ? $result['available_reservation_amount'] : '');
-                $payment->setAdditionalInformation(self::COLLECTOR_INVOICE_STATUS, isset($result['invoice_status']) ? $result['invoice_status'] : '');
-                if ($session->getUseFee() != 5){
-					$payment->setAdditionalInformation(self::COLLECTOR_INVOICE_FEE, $this->getInvoiceFee());
-					$payment->setAdditionalInformation(self::COLLECTOR_INVOICE_FEE_TAX, $this->getInvoiceFeeTax($order));
-					$payment->setAdditionalInformation(self::COLLECTOR_INVOICE_FEE_TAX_INVOICED, 0);
-					$payment->setAdditionalInformation(self::COLLECTOR_INVOICE_FEE_INVOICED, 0);
-					$payment->setAdditionalInformation(self::COLLECTOR_INVOICE_FEE_REFUNDED, 0);
-					$payment->setAdditionalInformation(self::COLLECTOR_INVOICE_FEE_INVOICE_NO, 0);
-					$payment->setAdditionalInformation(self::COLLECTOR_INVOICE_FEE_DESCRIPTION, Mage::helper('collectorbank')->__('Invoice fee'));
-				}
-				
 
-                $payment->save();
+        $result['invoice_status'] = $response['status'];
+        $result['invoice_no'] = $response['purchase']['purchaseIdentifier'];
+        $result['total_amount'] =  $response['order']['totalAmount'];
 
-                $order = $payment->getOrder();
-                if ($order->getState() == Mage_Sales_Model_Order::STATE_PENDING_PAYMENT) {
-                    $comment = Mage::helper('collectorbank')->__('Collector authorization successful');
-                    $order->setState(Mage_Sales_Model_Order::STATE_PROCESSING)
-                        ->addStatusToHistory($this->getConfigData('order_status'), $comment)
-                        ->setIsCustomerNotified(false)
-                        ->save();
-                }
-           
+        $payment->setAdditionalInformation(self::COLLECTOR_INVOICE_NO, isset($result['invoice_no']) ? $result['invoice_no'] : '');
+        $payment->setAdditionalInformation(self::COLLECTOR_PAYMENT_REF, isset($result['payment_reference']) ? $result['payment_reference'] : '');
+        $payment->setAdditionalInformation(self::COLLECTOR_LOWEST_AMOUNT_TO_PAY, isset($result['lowest_amount_to_pay']) ? $result['lowest_amount_to_pay'] : '');
+        $payment->setAdditionalInformation(self::COLLECTOR_TOTAL_AMOUNT, isset($result['total_amount']) ? $result['total_amount'] : '');
+        $payment->setAdditionalInformation(self::COLLECTOR_DUE_DATE, isset($result['due_date']) ? $result['due_date'] : '');
+        $payment->setAdditionalInformation(self::COLLECTOR_AVAILABLE_RESERVATION_AMOUNT, isset($result['available_reservation_amount']) ? $result['available_reservation_amount'] : '');
+        $payment->setAdditionalInformation(self::COLLECTOR_INVOICE_STATUS, isset($result['invoice_status']) ? $result['invoice_status'] : '');
+        if ($session->getUseFee() != 5){
+            $payment->setAdditionalInformation(self::COLLECTOR_INVOICE_FEE, $this->getInvoiceFee());
+            $payment->setAdditionalInformation(self::COLLECTOR_INVOICE_FEE_TAX, $this->getInvoiceFeeTax($order));
+            $payment->setAdditionalInformation(self::COLLECTOR_INVOICE_FEE_TAX_INVOICED, 0);
+            $payment->setAdditionalInformation(self::COLLECTOR_INVOICE_FEE_INVOICED, 0);
+            $payment->setAdditionalInformation(self::COLLECTOR_INVOICE_FEE_REFUNDED, 0);
+            $payment->setAdditionalInformation(self::COLLECTOR_INVOICE_FEE_INVOICE_NO, 0);
+            $payment->setAdditionalInformation(self::COLLECTOR_INVOICE_FEE_DESCRIPTION, Mage::helper('collectorbank')->__('Invoice fee'));
+        }
 
+
+        $payment->save();
+
+        $order = $payment->getOrder();
+        if ($order->getState() == Mage_Sales_Model_Order::STATE_PENDING_PAYMENT) {
+            $comment = Mage::helper('collectorbank')->__('Collector authorization successful');
+            $order->setState(Mage_Sales_Model_Order::STATE_PROCESSING)
+                ->addStatusToHistory($this->getConfigData('order_status'), $comment)
+                ->setIsCustomerNotified(false)
+                ->save();
+        }
         return $this;
     }
 
     public function capture(Varien_Object $payment, $amount)
     {
+        Mage::log('capture 1', null, 'coldev.log');
 		try {
+            Mage::log('capture 2', null, 'coldev.log');
 			$helper = Mage::helper('collectorbank');
 			$invoice = Mage::registry('current_invoice');
 			$order = $payment->getOrder();
@@ -233,12 +232,14 @@ class Ecomatic_Collectorbank_Model_Collectorbank_Invoice extends Mage_Payment_Mo
 			$transactionId = $payment->getAdditionalInformation(self::COLLECTOR_INVOICE_NO);
 
 			if (Mage::helper('collectorbank')->isPartial($invoice)) {
+                Mage::log('capture 3', null, 'coldev.log');
 				if ($helper->hasCredit($payment)) {
 					$result['error'] = true;
 					$result['error_message'] = Mage::helper('collectorbank')->__('Orders with gift card, store credit or reward point can not be partial invoiced');
 				}
 				else {
-					$additionalData = array('invoice' => $invoice);
+                    $quote = Mage::getModel('sales/quote')->getCollection()->addFieldToFilter('reserved_order_id', $order->getIncrementId())->getFirstItem();
+					$additionalData = array('invoice' => $invoice, 'quote' => $quote);
 					$request = $helper->getPartActivateRequest($payment, $additionalData);
 					$client = $helper->getSoapClient();
 					$headers = array();
@@ -250,6 +251,9 @@ class Ecomatic_Collectorbank_Model_Collectorbank_Invoice extends Mage_Payment_Mo
 					}
 					$client->__setSoapHeaders($headerList);
 					try {
+					    ob_start();
+					    var_dump($request);
+                        Mage::log('part activate request: ' . ob_get_clean(), null, 'coldev.log');
 						$response = $client->__soapCall('PartActivateInvoice', array('PartActivateInvoiceRequest' => $request));
 					}
 					catch (Exception $e) {
@@ -295,6 +299,9 @@ class Ecomatic_Collectorbank_Model_Collectorbank_Invoice extends Mage_Payment_Mo
 				$client->__setSoapHeaders($headerList);
 				$request = array('ActivateInvoiceRequest' => $request);
 				try {
+				    ob_start();
+				    var_dump($request);
+				    Mage::log('full capture request: ' . ob_get_clean(), null, 'coldev.log');
 					$response = $client->__soapCall('ActivateInvoice', $request);
 				}
 				catch (Exception $e) {
@@ -324,12 +331,13 @@ class Ecomatic_Collectorbank_Model_Collectorbank_Invoice extends Mage_Payment_Mo
 			}
 
 			if ($result['error']) {
+                $helper->exceptionHandler($e, $client);
 				Mage::throwException(Mage::helper('collectorbank')->__('Activating invoice failed: %s', $result['error_message']));
 			}
-
 			return $this;
 		}
 		catch (Exception $e){
+            $helper->exceptionHandler($e, $client);
 			Mage::throwException(Mage::helper('collectorbank')->__('Activating invoice failed: %s', $e->getMessage()));
 		}
     }
@@ -469,7 +477,9 @@ class Ecomatic_Collectorbank_Model_Collectorbank_Invoice extends Mage_Payment_Mo
         }
         $partialCredit = Mage::helper('collectorbank')->isPartial($creditmemo);
         if ($partialCredit) {
-			$request = $helper->getPartialCreditRequest($payment);
+            $quote = Mage::getModel('sales/quote')->getCollection()->addFieldToFilter('reserved_order_id', $payment->getOrder()->getIncrementId())->getFirstItem();
+            $additionalData = array('quote' => $quote);
+			$request = $helper->getPartialCreditRequest($payment, $additionalData);
 			$client = $helper->getSoapClient();
 			$headers = array();
 			$headers['Username'] = $helper->getUsername($payment->getOrder()->getStoreId());

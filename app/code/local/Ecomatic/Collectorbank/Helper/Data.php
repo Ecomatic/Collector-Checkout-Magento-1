@@ -17,7 +17,7 @@ class Ecomatic_Collectorbank_Helper_Data extends Mage_Core_Helper_Abstract
         $pattern = '/(<ns1\:RegNo>.+?)+(<\/ns1\:RegNo>)/i';
         $msg = preg_replace($pattern, '<ns1:RegNo>***********</ns1:RegNo>', $msg);
 
-        Mage::log($msg, Zend_Log::DEBUG, 'ecomatic_collector_debug.log');
+        Mage::log($msg, Zend_Log::DEBUG, 'ecomatic_collector_exception.log');
     }
 
     public function logException($e){
@@ -417,7 +417,7 @@ class Ecomatic_Collectorbank_Helper_Data extends Mage_Core_Helper_Abstract
         );
     }
 
-    public function articleList($item) {
+    public function articleList($item, $additionalData) {
         $qty = $item->getQty();
         $orderItem = $item->getOrderItem();
         if ($orderItem->getId() AND $orderItem->getProductType() == 'configurable') {
@@ -434,19 +434,17 @@ class Ecomatic_Collectorbank_Helper_Data extends Mage_Core_Helper_Abstract
         }
         
         $itemId = false;
-        if ($item instanceof Mage_Sales_Model_Order_Invoice_Item) {
-            $itemId = $item->getOrderItemId();
+        $quote = $additionalData['quote'];
+        $colItems = json_decode($quote->getData('collector_response'))->cart->items;
+        foreach ($colItems as $colItem){
+            Mage::log('expression ' . ob_get_clean(), null, 'coldev.log');
+            if (strpos($colItem->id, $item->getSku()) !== false){
+                $itemId = $colItem->id;
+            }
         }
-        elseif ($item instanceof Mage_Sales_Model_Order_Creditmemo_Item) {
-            $itemId = $item->getOrderItemId();
-        }
-        elseif ($item instanceof Mage_Sales_Model_Order_Item) {
-            $itemId = $item->getItemId();
-        }
-        
-        $articleId = (strlen($item->getSku()) > 50) ? $itemId : $item->getSku();
+
         return array(
-            'ArticleId' => $item->getSku(),
+            'ArticleId' => $itemId,
             'Description' => $item->getName(),
             'Quantity' => $qty,
         );
@@ -648,7 +646,7 @@ class Ecomatic_Collectorbank_Helper_Data extends Mage_Core_Helper_Abstract
 		            continue;
 		        }
 		    }
-		    $request['ArticleList'][] = $this->articleList($item);
+		    $request['ArticleList'][] = $this->articleList($item, $additionalData);
 		}
 		
         
@@ -661,7 +659,7 @@ class Ecomatic_Collectorbank_Helper_Data extends Mage_Core_Helper_Abstract
 		return $request;
     }
 	
-	public function getPartialCreditRequest($payment) {
+	public function getPartialCreditRequest($payment, $additionalData = false) {
         $creditmemo = $payment->getCreditmemo();
         
         $request = array(
@@ -707,7 +705,7 @@ class Ecomatic_Collectorbank_Helper_Data extends Mage_Core_Helper_Abstract
                 }
             }
 
-            $request['ArticleList'][] = $this->articleList($item);
+            $request['ArticleList'][] = $this->articleList($item, $additionalData);
         }
         
         if ($creditmemo->getBaseShippingAmount() == $payment->getBaseShippingAmount() AND $creditmemo->getBaseShippingAmount() > 0) {

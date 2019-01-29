@@ -88,6 +88,9 @@ class Ecomatic_Collectorbank_Block_Index extends Mage_Core_Block_Template {
 				
 			} else {
 				$tokenData = Mage::getModel('collectorbank/api')->getPublicToken($typeData);
+                if ($tokenData['code'] !== 1){
+                    return array('error' => 1, 'message' => $tokenData['error']);
+                }
 				$publicToken  =  $tokenData['publicToken'];	
 				$privateId  =  $tokenData['privateId'];
 				$hashstr  =  $tokenData['hashstr'];
@@ -117,6 +120,9 @@ class Ecomatic_Collectorbank_Block_Index extends Mage_Core_Block_Template {
 			
 			} else {
 				$tokenData = Mage::getModel('collectorbank/api')->getPublicToken($typeData);
+                if ($tokenData['code'] !== 1){
+                    return array('error' => 1, 'message' => $tokenData['error']);
+                }
 				$publicToken  =  $tokenData['publicToken'];
 				$privateId  =  $tokenData['privateId'];
 				$hashstr  =  $tokenData['hashstr'];
@@ -124,15 +130,15 @@ class Ecomatic_Collectorbank_Block_Index extends Mage_Core_Block_Template {
 				$session->setData('public_token', $publicToken);
 				$session->setData('success_public_token', $publicToken);
 				$session->setData('private_id', $privateId);	
-				$session->setData('hashstr', $hashstr);					
+				$session->setData('hashstr', $hashstr);
 			}
 			
 			if($publicToken == ''){
 				$publicToken = $session->getPublicToken();
 			}
 		}
-		$session->setData('is_shpping_changed',0);	
-		return $publicToken;
+		$session->setData('is_shpping_changed',0);
+        return array('error' => 0, 'message' => $publicToken);
 	
 	}
 

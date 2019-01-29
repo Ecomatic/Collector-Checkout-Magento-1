@@ -113,7 +113,7 @@ class Ecomatic_Collectorbank_Helper_Invoiceservice extends Ecomatic_Collectorban
         );
     }
 
-    public function articleList($item) {
+    public function articleList($item, $additionalData) {
         $qty = $item->getQty();
         $orderItem = $item->getOrderItem();
         if ($orderItem->getId() AND $orderItem->getProductType() == 'configurable') {
@@ -128,23 +128,20 @@ class Ecomatic_Collectorbank_Helper_Invoiceservice extends Ecomatic_Collectorban
                 }
             }
         }
-        
+
         $itemId = false;
-        if ($item instanceof Mage_Sales_Model_Order_Invoice_Item) {
-            $itemId = $item->getOrderItemId();
+        $quote = $additionalData['quote'];
+        $colItems = json_decode($quote->getData('collector_response'))->cart->items;
+        foreach ($colItems as $colItem){
+            Mage::log('expression ' . ob_get_clean(), null, 'coldev.log');
+            if (strpos($colItem->id, $item->getSku()) !== false){
+                $itemId = $colItem->id;
+            }
         }
-        elseif ($item instanceof Mage_Sales_Model_Order_Creditmemo_Item) {
-            $itemId = $item->getOrderItemId();
-        }
-        elseif ($item instanceof Mage_Sales_Model_Order_Item) {
-            $itemId = $item->getItemId();
-        }
-        
-        //$articleId = (strlen($item->getSku()) > 50) ? $itemId : $item->getSku();
-		$articleId = $item->getSku();
+
         return array(
-            'ArticleId' => $articleId,
-            'Description' => $this->cutStringAt($item->getName(), 50),
+            'ArticleId' => $itemId,
+            'Description' => $item->getName(),
             'Quantity' => $qty,
         );
     }

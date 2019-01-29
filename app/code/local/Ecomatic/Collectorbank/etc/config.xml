@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Ecomatic_Collectorbank>
-            <version>0.1.2</version>
+            <version>1.0.0</version>
         </Ecomatic_Collectorbank>
     </modules>
     <frontend>

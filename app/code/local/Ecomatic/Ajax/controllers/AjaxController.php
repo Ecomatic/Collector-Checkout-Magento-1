@@ -34,7 +34,7 @@ class Ecomatic_Ajax_AjaxController extends Mage_Core_Controller_Front_Action {
                     Mage::getSingleton('checkout/session')->addError($this->__('Cannot remove item'));
                 }
             }
-			$found = false;
+			/*$found = false;
 			$shippingaddress = Mage::getSingleton('checkout/cart')->getQuote()->getShippingAddress();
 			$_shippingRateGroups = $shippingaddress->getGroupedAllShippingRates();
 			foreach ($_shippingRateGroups as $code => $_rates){
@@ -49,12 +49,12 @@ class Ecomatic_Ajax_AjaxController extends Mage_Core_Controller_Front_Action {
 				foreach ($_shippingRateGroups as $code => $_rates){
 					foreach ($_rates as $rate){
 						if ($first){
-							$this->_getQuote()->getShippingAddress()->setShippingMethod($rate->getCode())/*->collectTotals()*/->save();
+							$this->_getQuote()->getShippingAddress()->setShippingMethod($rate->getCode())/*->collectTotals()->save();
 							$first = false;
 						}
 					}
 				}
-			}
+			}*/
 			$cart = $this->_getCart();
 			$cart->getQuote()->collectTotals();
 			$cart->getQuote()->save();
@@ -163,7 +163,8 @@ class Ecomatic_Ajax_AjaxController extends Mage_Core_Controller_Front_Action {
 				$outOfStock = false;
 				foreach ($cart->getItems() as $item){
 					if ($tmp['item_id'] == $item->getId()){
-						$stock = Mage::getModel('cataloginventory/stock_item')->loadByProduct($item->getProduct());
+                        $_product = Mage::getModel('catalog/product')->loadByAttribute('sku', $item->getSku());
+						$stock = Mage::getModel('cataloginventory/stock_item')->loadByProduct($_product);
 						if ($stock->getQty() < $tmp['item_qty']+$tmp['prevQty']){
 							$outOfStock = true;
 						}
@@ -348,7 +349,13 @@ class Ecomatic_Ajax_AjaxController extends Mage_Core_Controller_Front_Action {
 			$session = Mage::getSingleton('checkout/session');
 			$session->setData('is_shpping_changed',1); 
 			$cart_list = $this->getLayout()->getBlock('cart_content_ajax')->toHtml();
-			$this->getLayout()->getBlock('collectorbank_index')->toHtml();
+			if ($session->getPublicToken() == null) {
+                $checkout = $this->getLayout()->getBlock('collectorbank_index')->toHtml();
+                $response['checkout_ajax'] = $checkout;
+			}
+			else {
+                $this->getLayout()->getBlock('collectorbank_index')->toHtml();
+            }
 			$response['cart_content_ajax'] = $cart_list;
             
         } catch (Mage_Core_Exception $e) {           

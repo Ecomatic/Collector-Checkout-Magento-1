@@ -48,9 +48,13 @@ class Ecomatic_Fee_Block_Sales_Order_Total extends Mage_Core_Block_Template
      */
     public function initTotals()
     {
+        Mage::log('fee block adminhtml init totals 1', null, 'feedev.log');
         if ((float) $this->getOrder()->getBaseFeeAmount()) {
+            Mage::log('fee block adminhtml init totals 2', null, 'feedev.log');
             $source = $this->getSource();
+            Mage::log('fee block adminhtml init totals 3', null, 'feedev.log');
             $value  = $source->getFeeAmount();
+            Mage::log('fee block adminhtml init totals 4', null, 'feedev.log');
 
             $this->getParentBlock()->addTotal(new Varien_Object(array(
                 'code'   => 'fee',
@@ -58,7 +62,9 @@ class Ecomatic_Fee_Block_Sales_Order_Total extends Mage_Core_Block_Template
                 'label'  => Mage::helper('fee')->formatFee($value),
                 'value'  => $source instanceof Mage_Sales_Model_Order_Creditmemo ? - $value : $value
             )));
+            Mage::log('fee block adminhtml init totals 5', null, 'feedev.log');
         }
+        Mage::log('fee block adminhtml init totals 6', null, 'feedev.log');
 
         return $this;
     }

@@ -6,19 +6,19 @@ if (Mage::getSingleton('checkout/session')->getQuote()->getGrandTotal() < floatv
 	<div class="checkout-iframe">
 		<?php echo $this->__("Minimum Order amount is: %s", Mage::getStoreConfig('sales/minimum_order/amount'));?>
 	</div>
-<?php } else if($publicToken){ ?>
+<?php } else if($publicToken['error'] == 0){ ?>
 	<div class='checkout-iframe'>
 		<script type='text/javascript'>
 			var publicToken = '<?php echo $publicToken;?>';
 		</script>
-		<script id='fixme' data-lang='<?php echo $language;?>' data-token='<?php echo $publicToken;?>' src='<?php echo $this->getIframeSrc();?>' <?php echo $dataVariant;?>></script>		
+		<script id='fixme' data-lang='<?php echo $language;?>' data-token='<?php echo $publicToken['message'];?>' src='<?php echo $this->getIframeSrc();?>' <?php echo $dataVariant;?>></script>
 	</div>
 <?php } 
 
 	else { ?>
 	<div class="checkout-iframe">
-		<?php echo $this->__("Collector Checkout is not available. Please try later!");
-		Mage::log('Public token is missing.Please check configuraton', null,'cartiframe.log');?>
+		<?php echo $this->__($publicToken['message']);
+		Mage::log('Public token is missing, message: ' . $publicToken['message'], null,'cartiframe.log');?>
 	</div>
 <?php }   ?>
 

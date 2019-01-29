@@ -165,7 +165,10 @@
 						complete: function() {
 							// ... and finally resume the Checkout after the backend call is completed to update the checkout
 							jQuery('body').removeClass('is-suspended');
-							window.collector.checkout.api.resume();
+                            try {
+                                window.collector.checkout.api.resume();
+                            }
+                            catch(err) {}
 						},
 				    });
 
@@ -213,7 +216,10 @@
 						complete: function() {
 							// ... and finally resume the Checkout after the backend call is completed to update the checkout
 							jQuery('body').removeClass('is-suspended');
-							window.collector.checkout.api.resume();
+                            try {
+                                window.collector.checkout.api.resume();
+                            }
+                            catch(err) {}
 						},
 				   });
 
@@ -301,7 +307,10 @@
 											complete: function() {
 												// ... and finally resume the Checkout after the backend call is completed to update the checkout
 												jQuery('body').removeClass('is-suspended');
-												window.collector.checkout.api.resume();
+                                                try {
+                                                    window.collector.checkout.api.resume();
+                                                }
+                                                catch(err) {}
 											},
                         	             });
                               //fancybox_update();
@@ -416,7 +425,10 @@
 		complete: function() {
 			// ... and finally resume the Checkout after the backend call is completed to update the checkout
 			jQuery('body').removeClass('is-suspended');
-			window.collector.checkout.api.resume();
+            try {
+                window.collector.checkout.api.resume();
+            }
+            catch(err) {}
 		},
       });
     }
@@ -514,7 +526,10 @@
 		complete: function() {
 			// ... and finally resume the Checkout after the backend call is completed to update the checkout
 			jQuery('body').removeClass('is-suspended');
-			window.collector.checkout.api.resume();
+            try {
+                window.collector.checkout.api.resume();
+            }
+            catch(err) {}
 		},
     });
 	
@@ -591,7 +606,10 @@ function qtydecrese(url, item, prev_qty, obj) {
         },
 		complete: function() {
 			// ... and finally resume the Checkout after the backend call is completed to update the checkout
-			window.collector.checkout.api.resume();
+            try {
+                window.collector.checkout.api.resume();
+            }
+            catch(err) {}
 			jQuery('body').removeClass('is-suspended');
 		},
     });

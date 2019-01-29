@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Ecomatic_Fee>
-            <version>0.1.4</version>
+            <version>1.0.0</version>
         </Ecomatic_Fee>
     </modules>
     <frontend>
