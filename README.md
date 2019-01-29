@@ -26,7 +26,7 @@ Currencies must be set to either Swedish or Norwegian Crowns and must align with
 	
 System -> Configuration -> Genral -> Web -> Session Validation Settings -> Use SID on Frontend to "No".
 
-## Version 2.0
+## Version 1.0
 ### Changed the checkout flow
 The new checkout flow requires that the callbacks arrive. 
 Meaning if firewalls, .htaccess locks and other things which prevents users from directly accessing the site will cause orders not to be created.
