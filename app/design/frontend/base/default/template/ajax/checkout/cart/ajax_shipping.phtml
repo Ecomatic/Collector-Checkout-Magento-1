@@ -109,7 +109,6 @@
 <script type="text/javascript">
 	function estimateUpdate(estimateupdate_url)
 	 {
-		console.log(estimateupdate_url);
 		jQuery.ajax({
 				   type: 'post',
 				   url: estimateupdate_url,
@@ -125,20 +124,25 @@
 					},
 				   success: function(data)
 					{
-						var result =  data;
+						var result =  data.cart_content_ajax;
 						data_estimate_update_total = jQuery(result).find('div.totals').html();
-							jQuery('div.totals').html(data_estimate_update_total);
-						
+                        jQuery('div.totals').html(data_estimate_update_total);
 						if(data.cart_content_ajax){
 							jQuery('div.cart').replaceWith(data.cart_content_ajax);
-						} 
+						}
+						if (data.checkout_ajax){
+						    jQuery('div.checkout-iframe').replaceWith(data.checkout_ajax);
+                        }
 						
 						
 					},
 					complete: function() {
 						// ... and finally resume the Checkout after the backend call is completed to update the checkout
 						jQuery('body').removeClass('is-suspended');
-						window.collector.checkout.api.resume();
+						try {
+                            window.collector.checkout.api.resume();
+                        }
+                        catch(err) {}
 					},
 		});
 	 }

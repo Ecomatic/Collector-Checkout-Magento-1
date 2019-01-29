@@ -83,8 +83,13 @@ class Ecomatic_Collectorbank_Model_Config extends Varien_Object
 	{		
         return Mage::getStoreConfig('ecomatic_collectorbank/general/username');
     }
-	
-	public function getBusinessSecretkey() 
+
+    public function getRegisterCustomer()
+    {
+        return Mage::getStoreConfig('ecomatic_collectorbank/general/register_customer');
+    }
+
+	public function getBusinessSecretkey()
 	{
         return Mage::helper('core')->decrypt(Mage::getStoreConfig('ecomatic_collectorbank/general/password_iframe'));
     }

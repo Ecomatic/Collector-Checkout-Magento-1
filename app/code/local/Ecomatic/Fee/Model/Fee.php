@@ -8,8 +8,6 @@ class Ecomatic_Fee_Model_Fee extends Varien_Object{
 		return Mage::getStoreConfig('ecomatic_collectorbank/invoice/invoice_fee_company');
 	}
 	public static function canApply($address){
-		
 		return true;
-		
 	}
 }

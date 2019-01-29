@@ -48,6 +48,8 @@ class Ecomatic_Fee_Model_Sales_Quote_Address_Total_Fee extends Mage_Sales_Model_
 
 			$address->setGrandTotal($address->getGrandTotal() + $address->getFeeAmount());
 			$address->setBaseGrandTotal($address->getBaseGrandTotal() + $address->getBaseFeeAmount());
+			$quote->save();
+			$address->save();
 		}
 	}
 

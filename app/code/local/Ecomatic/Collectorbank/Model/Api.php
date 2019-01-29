@@ -26,7 +26,12 @@ class Ecomatic_Collectorbank_Model_Api extends Mage_Core_Model_Abstract
 		$termsUrl = Mage::getStoreConfig('ecomatic_collectorbank/general/terms_url');
 		return $termsUrl;
 	}
-	
+
+	public function getValidationUri($nextOrderId){
+        $getBaseUrl = Mage::getUrl();
+        $validationUrl = $getBaseUrl."collectorcheckout/index/validation?OrderNo=".$nextOrderId;
+        return $validationUrl;
+    }
 	
 	public function getNotificationUri($nextOrderId){
 		$getBaseUrl = Mage::getUrl();
@@ -330,17 +335,17 @@ class Ecomatic_Collectorbank_Model_Api extends Mage_Core_Model_Abstract
 		}
 		$array['merchantTermsUri'] = $this->getMerchantTermsUri();
 		$array['notificationUri'] = $this->getNotificationUri($nextOrderId);
-		
+        $array['validationUri'] = $this->getValidationUri($nextOrderId);
 		$address =  $cart->getShippingAddress();
 		$selectedShipMethod = $address->getShippingMethod();
-		
+
 		$methods = Mage::getSingleton('shipping/config')->getActiveCarriers();
-		if(empty($selectedShipMethod)){
+		/*if(empty($selectedShipMethod)){
 			$selectedShipMethod = "freeshipping_freeshipping";
 			$sihpDesc = "Free Shipping";
 			$sihpInclTaxAmount = 0;
 			$shippingTaxPercent = 0;
-		}
+		}*/
 		if(!empty($selectedShipMethod)){
 			
 			$sihpDesc = $address->getShippingDescription()? $address->getShippingDescription() : 'shipping';
@@ -437,7 +442,7 @@ class Ecomatic_Collectorbank_Model_Api extends Mage_Core_Model_Abstract
 		} else {
 			Mage::log('ERROR -->'."Please select Shipping Method for Collector Checkout", null,'cartiframe.log');
 			$result['code'] = -1;
-			$result['error'] = "Please select Shipping Method for Collector Checkout";
+			$result['error'] = "Please select Shipping Method";
 		}
 		
 		return $result;

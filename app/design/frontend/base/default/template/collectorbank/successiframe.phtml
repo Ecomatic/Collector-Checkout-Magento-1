@@ -1,5 +1,5 @@
 
-	<?php 
+<?php
 $session = Mage::getSingleton('checkout/session');
 $publicToken = $session->getSuccessPublicToken();
 $language = $session->getLanguage();
@@ -13,3 +13,13 @@ $this->unsSession();
 	</script>
 	<script id='fixme' data-lang='<?php echo $language;?>' data-token='<?php echo $publicToken;?>' src='<?php echo $src;?>' <?php echo $dataVariant;?>></script>		
 </div>
+<?php
+$session->setData('business_public_token', null);
+$session->setData('success_public_token', null);
+$session->setData('business_private_id', null);
+$session->setData('business_hashstr', null);
+$session->setData('public_token', null);
+$session->setData('success_public_token', null);
+$session->setData('private_id', null);
+$session->setData('hashstr', null);
+?>

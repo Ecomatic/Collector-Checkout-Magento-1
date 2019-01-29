@@ -16,9 +16,6 @@ class Ecomatic_Fee_Model_Sales_Order_Total_Invoice_Fee extends Mage_Sales_Model_
 			$invoice->setGrandTotal(0);
 			$invoice->setBaseGrandTotal(0);
 		}
-			
-		$invoice->setFeeAmount($feeAmountLeft);
-		$invoice->setBaseFeeAmount($baseFeeAmountLeft);
 		return $this;
 	}
 }
