@@ -34,6 +34,9 @@ class Ecomatic_Fee_Model_Sales_Quote_Address_Total_Fee extends Mage_Sales_Model_
 			else {
 				$fee = Ecomatic_Fee_Model_Fee::getFee();
 			}
+            if ($fee == ""){
+                $fee = 0;
+            }
 			$exist_amount = $quote->getFeeAmount();
 			$balance = $fee - $exist_amount;
 			// 			$balance = $fee;
