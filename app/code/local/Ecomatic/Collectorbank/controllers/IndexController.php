@@ -145,7 +145,15 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
 	}
 	
 	public function createB2BOrder($quote, $orderData, $privateId, $orderId){
-		
+
+        $sessionCustomer = Mage::getSingleton("customer/session");
+
+        if($sessionCustomer->isLoggedIn()) {
+            $customerLoggedIn = 1;
+        } else {
+            $customerLoggedIn = 0;
+        }
+
 		$session = Mage::getSingleton('checkout/session');
 		
 		$logFileName = 'magentoorder.log';
@@ -246,8 +254,9 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
 		$store = Mage::app()->getStore();
 		$website = Mage::app()->getWebsite();
 		$customer = Mage::getModel('customer/customer')->setWebsiteId($website->getId())->loadByEmail($email);
+        $createAccount = Mage::getModel('collectorbank/config')->getRegisterCustomer();
 		// if the customer is not already registered
-		if (!$customer->getId()) {
+        if (!$customer->getId() && $createAccount) {
 			$customer = Mage::getModel('customer/customer');			
 			$customer->setWebsiteId($website->getId())
 					 ->setStore($store)
@@ -281,7 +290,9 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
 
             Mage::log('Customer with email '.$email.' is successfully created.', null, $logFileName);
 		}
-		$quote->assignCustomer($customer);
+        if ($createAccount) {
+            $quote->assignCustomer($customer);
+        }
 		
 		$billingAddressData = $quote->getBillingAddress()->addData($billingAddress);
 		$shippingAddressData = $quote->getShippingAddress()->addData($shippingAddress);
@@ -304,6 +315,17 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
             $quote->setReservedOrderId($orderDetails['reference']);
         }
         $quote->setCustomerEmail($email);
+        if ($createAccount || $customerLoggedIn == 1){
+            $quote->getBillingAddress()->setCustomerId($customer->getId());
+            $quote->getShippingAddress()->setCustomerId($customer->getId());
+        }
+        if (!$createAccount && !$customerLoggedIn == 1){
+            $quote->setCustomerId(null);
+            $quote->setCustomerEmail($email);
+            $quote->setCustomerIsGuest(true);
+            $quote->setCustomerGroupId(Mage_Customer_Model_Group::NOT_LOGGED_IN_ID);
+            $quote->setCheckoutMethod(Mage_Sales_Model_Quote::CHECKOUT_METHOD_GUEST);
+        }
         $quote->collectTotals();
         $quote->save();
         $service = Mage::getModel('sales/service_quote', $quote);
