@@ -48,7 +48,7 @@
 			<action method="setTemplate"><template>page/1column.phtml</template></action>   
 		</reference>   
 		<reference name="content">   
-			<block type="collectorbank/success" name="collectorbank_success" template="collectorbank/successiframe.phtml"/>
+			<block type="collectorbank/success" after="-" name="collectorbank_success" template="collectorbank/successiframe.phtml"/>
 		</reference>
 	</collectorbank_index_success>
 	
@@ -57,7 +57,7 @@
 			<action method="setTemplate"><template>page/1column.phtml</template></action>   
 		</reference>   
 		<reference name="content">   
-			<block type="collectorbank/success" name="collectorbank_success" template="collectorbank/successiframe.phtml"/>
+			<block type="collectorbank/success" after="-" name="collectorbank_success" template="collectorbank/successiframe.phtml"/>
 		</reference>
 	</collectorbank_index_bsuccess>
 	

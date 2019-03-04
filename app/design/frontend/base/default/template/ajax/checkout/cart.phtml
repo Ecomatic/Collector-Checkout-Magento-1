@@ -98,7 +98,7 @@
     <?php echo $this->getChildHtml('crosssell') ?>
 
 	
-	<script type="text/javascript">
+	<script type="text/javascript" defer>
 		var url_update_shoopingcart = '<?php echo $this->getUrl("checkout/cart/updatePost") ?>';
 		var url_topcart = "<?php echo $this->getUrl('ajax/ajax/headercart'); ?>";
 		var image = "<?php echo $this->getSkinUrl('images/collectorbank_ajax/ajax_loader.gif'); ?>";
@@ -120,7 +120,7 @@
 		});
 		function setCtype(ctype) {
 			if (iframeLoaded) {
-				return;
+				return 1;
 			}
 			jQuery.ajax({
 				url:'<?php echo $this->getUrl('ajax/ajax/loadiframe');?>',
@@ -142,6 +142,7 @@
 					var result = data;
 					if(data.cart_content_ajax){
 						jQuery('div.cart').replaceWith(data.cart_content_ajax);
+
 					}
 					if(data.iframe_ajax){
 						jQuery('div.checkout-iframe').replaceWith(data.iframe_ajax);
@@ -168,11 +169,12 @@
 					jQuery('body').removeClass('is-suspended');
                     try {
                         window.collector.checkout.api.resume();
-                        iframeLoaded = true;
+                    //    iframeLoaded = true;
                     }
                     catch(err) {}
 				}
 			});
+			return 0;
 		}
 	</script>
 	
