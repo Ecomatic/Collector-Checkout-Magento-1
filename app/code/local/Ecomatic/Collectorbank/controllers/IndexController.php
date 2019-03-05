@@ -22,7 +22,11 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
 	
 	/* Redirection URL Action */	
 	public function bsuccessAction() {
+        $session = Mage::getSingleton('checkout/session');
         $quote = Mage::getSingleton('checkout/cart')->getQuote();
+        $order = Mage::getSingleton('sales/order');
+        $order = $order->loadByIncrementId($quote->getReservedOrderId());
+        $session->setLastOrderId($order->getId());
         $quote->setData('is_active', 0);
         $quote->save();
         $this->loadLayout();
@@ -31,7 +35,11 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
 	
 	/* Redirection URL Action */	
 	public function successAction() {
+        $session = Mage::getSingleton('checkout/session');
         $quote = Mage::getSingleton('checkout/cart')->getQuote();
+        $order = Mage::getSingleton('sales/order');
+        $order = $order->loadByIncrementId($quote->getReservedOrderId());
+        $session->setLastOrderId($order->getId());
         $quote->setData('is_active', 0);
         $quote->save();
         $this->loadLayout();
@@ -230,7 +238,8 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
 			'postcode' => $orderDetails['businessCustomer']['invoiceAddress']['postalCode'],
 			'telephone' => $mobile,
 			'fax' => '',
-			'save_in_address_book' => 1
+			'save_in_address_book' => 1,
+            'email' => $email
 		);
 		$shippingAddress = array(
 			'customer_address_id' => '',
@@ -248,7 +257,8 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
 			'postcode' => $orderDetails['businessCustomer']['deliveryAddress']['postalCode'],
 			'telephone' => $mobile,
 			'fax' => '',
-			'save_in_address_book' => 1
+			'save_in_address_book' => 1,
+            'email' => $email
 		);
 		
 		$store = Mage::app()->getStore();
@@ -337,8 +347,7 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
             Mage::getModel('newsletter/subscriber')->subscribe($email);
         }
         $session->setLastQuoteId($quote->getId())->setLastSuccessQuoteId($quote->getId())->clearHelperData();
-        Mage::getSingleton('checkout/session')->clear();
-        Mage::getSingleton('checkout/cart')->truncate()->save();
+        Mage::getSingleton('checkout/session')->setLastOrderId($service->getOrder()->getId());
         $session->unsBusinessPrivateId();
         $session->unsReference();
         Mage::log('Order created with increment id: '.$incrementId, null, $logFileName);
@@ -440,7 +449,8 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
 			'postcode' => $orderDetails['customer']['billingAddress']['postalCode'],
 			'telephone' => $mobile,
 			'fax' => '',
-			'save_in_address_book' => 1
+			'save_in_address_book' => 1,
+            'email' => $email
 		);
 		$shippingAddress = array(
 			'customer_address_id' => '',
@@ -458,7 +468,8 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
 			'postcode' => $orderDetails['customer']['deliveryAddress']['postalCode'],
 			'telephone' => $mobile,
 			'fax' => '',
-			'save_in_address_book' => 1
+			'save_in_address_book' => 1,
+            'email' => $email
 		);
 
 		$store = Mage::app()->getStore();
@@ -540,13 +551,9 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
         }
         Mage::log('b2c create order 3', null, 'coldev.log');
         $incrementId = $service->getOrder()->getRealOrderId();
+        Mage::getSingleton('checkout/session')->setLastOrderId($service->getOrder()->getId());
         $quote->setData('is_active', 1);
         $quote->save();
-        Mage::log('b2c create order 4', null, 'coldev.log');
-        Mage::getSingleton('checkout/session')->clear();
-        Mage::log('b2c create order 5', null, 'coldev.log');
-        Mage::getSingleton('checkout/cart')->truncate()->save();
-        Mage::log('b2c create order 6', null, 'coldev.log');
 
         Mage::log('Order created with increment id: '.$incrementId, null, $logFileName);
         $result['success'] = true;
