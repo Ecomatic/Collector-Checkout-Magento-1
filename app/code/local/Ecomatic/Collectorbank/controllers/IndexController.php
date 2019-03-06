@@ -22,8 +22,11 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
 	
 	/* Redirection URL Action */	
 	public function bsuccessAction() {
+	    $quote = Mage::getSingleton('checkout/cart')->getQuote();
+        if ($quote->getId() == null){
+            Mage::app()->getFrontController()->getResponse()->setRedirect(Mage::getBaseUrl());
+        }
         $session = Mage::getSingleton('checkout/session');
-        $quote = Mage::getSingleton('checkout/cart')->getQuote();
         $order = Mage::getSingleton('sales/order');
         $order = $order->loadByIncrementId($quote->getReservedOrderId());
         $session->setLastOrderId($order->getId());
@@ -36,8 +39,11 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
 	
 	/* Redirection URL Action */	
 	public function successAction() {
-        $session = Mage::getSingleton('checkout/session');
         $quote = Mage::getSingleton('checkout/cart')->getQuote();
+        if ($quote->getId() == null){
+            Mage::app()->getFrontController()->getResponse()->setRedirect(Mage::getBaseUrl());
+        }
+        $session = Mage::getSingleton('checkout/session');
         $order = Mage::getSingleton('sales/order');
         $order = $order->loadByIncrementId($quote->getReservedOrderId());
         $session->setLastOrderId($order->getId());

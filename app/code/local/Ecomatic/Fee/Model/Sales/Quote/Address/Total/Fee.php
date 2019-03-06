@@ -5,14 +5,13 @@ class Ecomatic_Fee_Model_Sales_Quote_Address_Total_Fee extends Mage_Sales_Model_
 	public function collect(Mage_Sales_Model_Quote_Address $address)
 	{
 		parent::collect($address);
-		
 		$this->_setAmount(0);
 		$this->_setBaseAmount(0);
 		$currentUrl = Mage::helper('core/url')->getCurrentUrl();
 		$url = Mage::getSingleton('core/url')->parseUrl($currentUrl);
 		$path = $url->getPath();
-		$checkoutPaths = array('/collectorcheckout', '/collectorcheckout/');
-		if (in_array($path, $checkoutPaths)){
+		$checkoutPaths = array('/collectorcheckout/index/success');
+		if (!in_array($path, $checkoutPaths)){
 			return $this;
 		}
 		$items = $this->_getAddressItems($address);
@@ -61,8 +60,8 @@ class Ecomatic_Fee_Model_Sales_Quote_Address_Total_Fee extends Mage_Sales_Model_
 		$currentUrl = Mage::helper('core/url')->getCurrentUrl();
 		$url = Mage::getSingleton('core/url')->parseUrl($currentUrl);
 		$path = $url->getPath();
-		$checkoutPaths = array('/collectorcheckout', '/collectorcheckout/');
-		if (in_array($path, $checkoutPaths)){
+        $checkoutPaths = array('/collectorcheckout/index/success');
+		if (!in_array($path, $checkoutPaths)){
 			return $this;
 		}
 		$amt = $address->getFeeAmount();
