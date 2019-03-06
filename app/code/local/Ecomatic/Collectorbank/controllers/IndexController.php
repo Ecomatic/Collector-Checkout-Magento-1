@@ -31,6 +31,7 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
         $quote->save();
         $this->loadLayout();
         $this->renderLayout();
+        $session->clear();
     }
 	
 	/* Redirection URL Action */	
@@ -44,6 +45,7 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
         $quote->save();
         $this->loadLayout();
         $this->renderLayout();
+        $session->clear();
 	}
 	
 	/* Notification URL Action */
