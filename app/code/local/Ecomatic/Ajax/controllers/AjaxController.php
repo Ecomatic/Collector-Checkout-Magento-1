@@ -390,6 +390,8 @@ class Ecomatic_Ajax_AjaxController extends Mage_Core_Controller_Front_Action {
 		$session = Mage::getSingleton('checkout/session');
 		$session->setData('type_data', $data);
 		$session->setData('ctype', $data['ctype']);
+		$session->setBusinessPrivateId(null);
+        $session->setPrivateId(null);
 		$cart_list = $this->getLayout()->getBlock('cart_content_ajax')->toHtml();
 		$response['cart_content_ajax'] = $cart_list;
 		$response['iframe_ajax'] = $this->getLayout()->getBlock('collectorbank_index')->toHtml();
