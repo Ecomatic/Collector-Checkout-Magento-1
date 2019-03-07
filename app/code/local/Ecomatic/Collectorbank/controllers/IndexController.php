@@ -24,7 +24,7 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
 	public function bsuccessAction() {
 	    $quote = Mage::getSingleton('checkout/cart')->getQuote();
         if ($quote->getId() == null){
-            Mage::app()->getFrontController()->getResponse()->setRedirect(Mage::getBaseUrl());
+            return Mage::app()->getFrontController()->getResponse()->setRedirect(Mage::getBaseUrl());
         }
         $session = Mage::getSingleton('checkout/session');
         $order = Mage::getSingleton('sales/order');
@@ -41,7 +41,7 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
 	public function successAction() {
         $quote = Mage::getSingleton('checkout/cart')->getQuote();
         if ($quote->getId() == null){
-            Mage::app()->getFrontController()->getResponse()->setRedirect(Mage::getBaseUrl());
+            return Mage::app()->getFrontController()->getResponse()->setRedirect(Mage::getBaseUrl());
         }
         $session = Mage::getSingleton('checkout/session');
         $order = Mage::getSingleton('sales/order');
@@ -676,6 +676,14 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
                 $this->loadLayout();
                 $this->renderLayout();
             }
+            $return = array(
+                'orderReference' => $order->getIncrementId()
+            );
+            $this->getResponse()
+                ->clearHeaders()
+                ->setHeader('Content-tyope', 'application/json', true)
+                ->setHeader('HTTP/1.0', 200, true)
+                ->setBody(json_encode($return));
         }
         catch (Exception $e){
             Mage::log($e->getMessage(), null, $logFile);
