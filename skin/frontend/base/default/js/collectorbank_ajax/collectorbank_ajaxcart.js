@@ -111,6 +111,9 @@
 						},					   
 					   success: function(data)
                        {
+                           if (data == "\"redirect\""){
+                               window.location.href = window.location.protocol + "//" + window.location.host + "/";
+                           }
                          jQuery('#ajax_loader'+del_id).hide();
                          jQuery("#overlay").hide();
                          var result = jQuery(data);

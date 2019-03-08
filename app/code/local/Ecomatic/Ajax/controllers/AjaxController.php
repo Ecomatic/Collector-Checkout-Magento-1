@@ -30,6 +30,12 @@ class Ecomatic_Ajax_AjaxController extends Mage_Core_Controller_Front_Action {
             if ($id) {
                 try {
                     Mage::getSingleton('checkout/cart')->removeItem($id)->save();
+                    $cart = Mage::getModel('checkout/cart')->getQuote();
+                    if(count($cart->getAllVisibleItems()) < 1 || !count($cart->getAllVisibleItems())) {
+                        $response = 'redirect';
+                        $this->getResponse()->setBody(Mage::helper('core')->jsonEncode($response));
+                        return;
+                    }
                 } catch (Exception $e) {
                     Mage::getSingleton('checkout/session')->addError($this->__('Cannot remove item'));
                 }
