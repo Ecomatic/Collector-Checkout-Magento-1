@@ -4,7 +4,11 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
     protected $ns = 'http://schemas.ecommerce.collector.se/v30/InvoiceService';
     
 	public function indexAction(){
-		$cart = Mage::getSingleton('checkout/cart');
+        $cart = Mage::getSingleton('checkout/cart');
+        $quote = $cart->getQuote();
+	    if ($quote->getGrandTotal() < floatval(Mage::getStoreConfig('sales/minimum_order/amount'))){
+            $this->_redirect('checkout/cart');
+        }
 		$messages = array();
         foreach ($cart->getQuote()->getMessages() as $message) {
             if ($message) {

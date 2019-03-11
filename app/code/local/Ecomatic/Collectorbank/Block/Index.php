@@ -1,7 +1,6 @@
 <?php   
 class Ecomatic_Collectorbank_Block_Index extends Mage_Core_Block_Template {   
 
-
 	public function getIframeSrc(){
 		$session = Mage::getSingleton('checkout/session');
 		if (Mage::getStoreConfig('ecomatic_collectorbank/general/sandbox_mode')){

@@ -608,7 +608,7 @@ function qtydecrese(url, item, prev_qty, obj) {
                 jQuery('.col-right .block-cart').html(data.cart_sidebar);
             }
             if (data.iframe_ajax) {
-                document.getElementById('collectoriframe').innerHTML = data.iframe_ajax;
+                window.location.href = window.location.protocol + "//" + window.location.host + "/checkout/cart";
             }
             jQuery("#pro-loading").remove();
             jQuery("#pro-img").remove();

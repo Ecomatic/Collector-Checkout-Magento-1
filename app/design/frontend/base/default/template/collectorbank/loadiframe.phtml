@@ -4,6 +4,9 @@ $language = $this->getLanguage();
 $dataVariant = $this->getVarient();
 if (Mage::getSingleton('checkout/session')->getQuote()->getGrandTotal() < floatval(Mage::getStoreConfig('sales/minimum_order/amount'))) { ?>
 	<div class="checkout-iframe" id="collectoriframe">
+        <script>
+            window.location.href = window.location.protocol + "//" + window.location.host + "/checkout/cart";
+        </script>
 		<?php echo $this->__("Minimum Order amount is: %s", Mage::getStoreConfig('sales/minimum_order/amount'));?>
 	</div>
 <?php } else if($publicToken['error'] == 0){ ?>
