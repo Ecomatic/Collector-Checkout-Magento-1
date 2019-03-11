@@ -208,9 +208,7 @@ class Ecomatic_Collectorbank_Model_Collectorbank_Invoice extends Mage_Payment_Mo
 
     public function capture(Varien_Object $payment, $amount)
     {
-        Mage::log('capture 1', null, 'coldev.log');
 		try {
-            Mage::log('capture 2', null, 'coldev.log');
 			$helper = Mage::helper('collectorbank');
 			$invoice = Mage::registry('current_invoice');
 			$order = $payment->getOrder();
@@ -232,7 +230,6 @@ class Ecomatic_Collectorbank_Model_Collectorbank_Invoice extends Mage_Payment_Mo
 			$transactionId = $payment->getAdditionalInformation(self::COLLECTOR_INVOICE_NO);
 
 			if (Mage::helper('collectorbank')->isPartial($invoice)) {
-                Mage::log('capture 3', null, 'coldev.log');
 				if ($helper->hasCredit($payment)) {
 					$result['error'] = true;
 					$result['error_message'] = Mage::helper('collectorbank')->__('Orders with gift card, store credit or reward point can not be partial invoiced');
@@ -251,9 +248,6 @@ class Ecomatic_Collectorbank_Model_Collectorbank_Invoice extends Mage_Payment_Mo
 					}
 					$client->__setSoapHeaders($headerList);
 					try {
-					    ob_start();
-					    var_dump($request);
-                        Mage::log('part activate request: ' . ob_get_clean(), null, 'coldev.log');
 						$response = $client->__soapCall('PartActivateInvoice', array('PartActivateInvoiceRequest' => $request));
 					}
 					catch (Exception $e) {
@@ -299,9 +293,6 @@ class Ecomatic_Collectorbank_Model_Collectorbank_Invoice extends Mage_Payment_Mo
 				$client->__setSoapHeaders($headerList);
 				$request = array('ActivateInvoiceRequest' => $request);
 				try {
-				    ob_start();
-				    var_dump($request);
-				    Mage::log('full capture request: ' . ob_get_clean(), null, 'coldev.log');
 					$response = $client->__soapCall('ActivateInvoice', $request);
 				}
 				catch (Exception $e) {

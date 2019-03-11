@@ -86,9 +86,6 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
                 $privId = $quote->getData('coll_purchase_identifier');
                 $resp = $this->getResp($privId, $btype);
                 $orderDetails = $resp['data'];
-                ob_start();
-                var_dump($orderDetails);
-                Mage::log("order details: " . ob_get_clean(), null, 'coldev.log');
                 if ($orderDetails["purchase"]["result"] == "OnHold"){
                     $pending = Mage::getStoreConfig('ecomatic_collectorbank/general/pending_order_status');
                     $order->setState($pending, true);
@@ -548,16 +545,13 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
             $quote->setCustomerGroupId(Mage_Customer_Model_Group::NOT_LOGGED_IN_ID);
             $quote->setCheckoutMethod(Mage_Sales_Model_Quote::CHECKOUT_METHOD_GUEST);
         }
-        Mage::log('b2c create order 1', null, 'coldev.log');
         $service = Mage::getModel('sales/service_quote', $quote);
-        Mage::log('b2c create order 2', null, 'coldev.log');
         try {
             $service->submitAll();
         }
         catch (Exception $e){
-            Mage::log($e->getMessage(), null, 'coldev.log');
+            Mage::log($e->getMessage(), null, $logFileName);
         }
-        Mage::log('b2c create order 3', null, 'coldev.log');
         $incrementId = $service->getOrder()->getRealOrderId();
         Mage::getSingleton('checkout/session')->setLastOrderId($service->getOrder()->getId());
         $quote->setData('is_active', 1);

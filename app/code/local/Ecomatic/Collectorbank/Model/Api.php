@@ -412,7 +412,7 @@ class Ecomatic_Collectorbank_Model_Api extends Mage_Core_Model_Abstract
 			curl_close($ch);
 			
 			$data = json_decode($output,true);
-			
+
 			$cart->setData('coll_purchase_identifier', $data["data"]["privateId"]);
 			$cart->setData('coll_customer_type', $typeData['ctype']);
 			$cart->save();

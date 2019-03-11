@@ -166,6 +166,8 @@ class Ecomatic_Ajax_AjaxController extends Mage_Core_Controller_Front_Action {
                     }
                 }				
                 $cart = $this->_getCart();
+                $quote = $cart->getQuote();
+                $prevTotal = $quote->getGrandTotal();
 				$outOfStock = false;
 				foreach ($cart->getItems() as $item){
 					if ($tmp['item_id'] == $item->getId()){
@@ -185,6 +187,7 @@ class Ecomatic_Ajax_AjaxController extends Mage_Core_Controller_Front_Action {
 				if (!$outOfStock){
 					$cartData = $cart->suggestItemsQty($cartData);
 					$cart->updateItems($cartData)->save();
+					$quote->save();
 				}
 				$cart = Mage::getSingleton('checkout/cart');
 				$messages = array();
@@ -230,6 +233,16 @@ class Ecomatic_Ajax_AjaxController extends Mage_Core_Controller_Front_Action {
                     $response['min_cart'] = $mini_cart;
 				}
 				$response['message'] = $this->__("Quantity increased successfully.");
+				if ($prevTotal < floatval(Mage::getStoreConfig('sales/minimum_order/amount')) && $quote->getGrandTotal() > floatval(Mage::getStoreConfig('sales/minimum_order/amount'))) {
+                    $checkoutBlock = $this->getLayout()->getBlock('collectorbank_index');
+                    $response['iframe_ajax'] = array(
+                        'src' => $checkoutBlock->getIframeSrc(),
+                        'id' => 'fixme',
+                        'datalang' => $checkoutBlock->getLanguage(),
+                        'datatoken' => $checkoutBlock->getPublicTokeniFrame(),
+                        'datavariant' => $checkoutBlock->getVarient()
+                    );
+                }
             }
         } catch (Mage_Core_Exception $e) {           
 			$response['status'] = 'ERROR';
@@ -265,6 +278,8 @@ class Ecomatic_Ajax_AjaxController extends Mage_Core_Controller_Front_Action {
                 }
 				
                 $cart = $this->_getCart();
+                $quote = $cart->getQuote();
+                $prevTotal = $quote->getGrandTotal();
                 if (! $cart->getCustomerSession()->getCustomer()->getId() && $cart->getQuote()->getCustomerId()) {
                     $cart->getQuote()->setCustomerId(null);
                 }
@@ -313,6 +328,10 @@ class Ecomatic_Ajax_AjaxController extends Mage_Core_Controller_Front_Action {
                     $response['min_cart'] = $mini_cart;
 				}
 				$response['message'] = $this->__("Quantity decreased successfully.");
+                if ($prevTotal > floatval(Mage::getStoreConfig('sales/minimum_order/amount')) && $quote->getGrandTotal() < floatval(Mage::getStoreConfig('sales/minimum_order/amount'))) {
+                    $checkoutBlock = $this->getLayout()->getBlock('collectorbank_index');
+                    $response['iframe_ajax'] = $this->__("Minimum Order amount is: %s", Mage::getStoreConfig('sales/minimum_order/amount'));
+                }
             }
             
         } catch (Mage_Core_Exception $e) {           
@@ -400,7 +419,14 @@ class Ecomatic_Ajax_AjaxController extends Mage_Core_Controller_Front_Action {
         $session->setPrivateId(null);
 		$cart_list = $this->getLayout()->getBlock('cart_content_ajax')->toHtml();
 		$response['cart_content_ajax'] = $cart_list;
-		$response['iframe_ajax'] = $this->getLayout()->getBlock('collectorbank_index')->toHtml();
+        $checkoutBlock = $this->getLayout()->getBlock('collectorbank_index');
+		$response['iframe_ajax'] = array(
+			'src' => $checkoutBlock->getIframeSrc(),
+			'id' => 'fixme',
+			'datalang' => $checkoutBlock->getLanguage(),
+			'datatoken' => $checkoutBlock->getPublicTokeniFrame(),
+			'datavariant' => $checkoutBlock->getVarient()
+		);
 		$this->getResponse()->setBody(Mage::helper('core')->jsonEncode($response));
 		return;
 	}

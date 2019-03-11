@@ -3,11 +3,11 @@ $publicToken = $this->getPublicTokeniFrame();
 $language = $this->getLanguage();
 $dataVariant = $this->getVarient();
 if (Mage::getSingleton('checkout/session')->getQuote()->getGrandTotal() < floatval(Mage::getStoreConfig('sales/minimum_order/amount'))) { ?>
-	<div class="checkout-iframe">
+	<div class="checkout-iframe" id="collectoriframe">
 		<?php echo $this->__("Minimum Order amount is: %s", Mage::getStoreConfig('sales/minimum_order/amount'));?>
 	</div>
 <?php } else if($publicToken['error'] == 0){ ?>
-	<div class='checkout-iframe'>
+	<div class='checkout-iframe' id="collectoriframe">
 		<script type='text/javascript'>
 			var publicToken = '<?php echo $publicToken;?>';
 		</script>
@@ -16,10 +16,24 @@ if (Mage::getSingleton('checkout/session')->getQuote()->getGrandTotal() < floatv
 <?php } 
 
 	else { ?>
-	<div class="checkout-iframe">
-		<?php echo $this->__($publicToken['message']);
-		Mage::log('Public token is missing, message: ' . $publicToken['message'], null,'cartiframe.log');?>
+	<div class="checkout-iframe" id="collectoriframe">
+
+		<?php
+        if (isset($publicToken['message'])){
+            if (isset($publicToken['message']['errors'])){
+                if (isset($publicToken['message']['errors'][0])){
+                    if (isset($publicToken['message']['errors'][0]['message'])){
+                        echo $this->__($publicToken['message']['errors'][0]['message']);
+                    }
+                }
+            }
+            else {
+                echo $publicToken['message'];
+            }
+        }
+
+		ob_start();
+		var_dump($publicToken);
+		Mage::log('Public token is missing, message: ' . ob_get_clean(), null,'cartiframe.log');?>
 	</div>
 <?php }   ?>
-
-

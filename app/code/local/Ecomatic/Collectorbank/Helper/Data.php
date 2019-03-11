@@ -437,7 +437,6 @@ class Ecomatic_Collectorbank_Helper_Data extends Mage_Core_Helper_Abstract
         $quote = $additionalData['quote'];
         $colItems = json_decode($quote->getData('collector_response'))->cart->items;
         foreach ($colItems as $colItem){
-            Mage::log('expression ' . ob_get_clean(), null, 'coldev.log');
             if (strpos($colItem->id, $item->getSku()) !== false){
                 $itemId = $colItem->id;
             }

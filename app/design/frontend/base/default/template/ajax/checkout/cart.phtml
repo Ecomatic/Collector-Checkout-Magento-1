@@ -145,7 +145,16 @@
 
 					}
 					if(data.iframe_ajax){
-						jQuery('div.checkout-iframe').replaceWith(data.iframe_ajax);
+						//jQuery('div.checkout-iframe').replaceWith(data.iframe_ajax);
+                        var scriptEl = document.createElement('script');
+                        scriptEl.setAttribute('src',data.iframe_ajax.src);
+                        scriptEl.async = true;
+                        scriptEl.setAttribute('id', data.iframe_ajax.id);
+                        scriptEl.setAttribute('data-lang', data.iframe_ajax.datalang);
+                        scriptEl.setAttribute('data-token', data.iframe_ajax.datatoken.message);
+                        scriptEl.setAttribute('data-variant', ctype);
+                        document.getElementById('collectoriframe').innerHTML = "";
+                        document.getElementById('collectoriframe').appendChild(scriptEl);
 					}
 					jQuery("#"+ctype ).addClass("active");
 					jQuery("#pro-loading").remove();
