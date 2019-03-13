@@ -33,6 +33,8 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
         $session = Mage::getSingleton('checkout/session');
         $order = Mage::getSingleton('sales/order');
         $order = $order->loadByIncrementId($quote->getReservedOrderId());
+	$order->getSendConfirmation(null);
+	$order->sendNewOrderEmail();
         $session->setLastOrderId($order->getId());
         $quote->setData('is_active', 0);
         $quote->save();
@@ -50,6 +52,8 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
         $session = Mage::getSingleton('checkout/session');
         $order = Mage::getSingleton('sales/order');
         $order = $order->loadByIncrementId($quote->getReservedOrderId());
+	$order->getSendConfirmation(null);
+	$order->sendNewOrderEmail();
         $session->setLastOrderId($order->getId());
         $quote->setData('is_active', 0);
         $quote->save();
