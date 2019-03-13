@@ -21,29 +21,31 @@ class Ecomatic_Collectorbank_Model_Observer {
 	
 	/* For selection of shipping method by default on cart */
 	public function handleCollect($observer) {
-		if (Mage::app()->getFrontController()->getAction()->getFullActionName() == 'collectorbank_index_index') {
-			$quote = $observer->getEvent()->getQuote();
-			$shippingAddress = $quote->getShippingAddress();
-			$saveQuote = false;
-			//if (!$shippingAddress->getCountryId()) {
-			if (!$shippingAddress->getShippingMethod()) {
-				$country = Mage::getStoreConfig('shipping/origin/country_id');
-				$state = Mage::getStoreConfig('shipping/origin/region_id');
-				$postcode = Mage::getStoreConfig('shipping/origin/postcode');
-				$method = Mage::getStoreConfig('payment/collectorbank_invoice/shippingmethod');
-				$shippingAddress
-					->setCountryId($country)
-					->setRegionId($state)
-					->setPostcode($postcode)
-					->setShippingMethod($method)
-					->setCollectShippingRates(true);
-				$shippingAddress->save();
-				$saveQuote = true;
-			}
-			if ($saveQuote)
-				$quote->save();
-			return $this;
-		}
+	    if (Mage::app()->getFrontController()->getAction() !== null) {
+            if (Mage::app()->getFrontController()->getAction()->getFullActionName() == 'collectorbank_index_index') {
+                $quote = $observer->getEvent()->getQuote();
+                $shippingAddress = $quote->getShippingAddress();
+                $saveQuote = false;
+                //if (!$shippingAddress->getCountryId()) {
+                if (!$shippingAddress->getShippingMethod()) {
+                    $country = Mage::getStoreConfig('shipping/origin/country_id');
+                    $state = Mage::getStoreConfig('shipping/origin/region_id');
+                    $postcode = Mage::getStoreConfig('shipping/origin/postcode');
+                    $method = Mage::getStoreConfig('payment/collectorbank_invoice/shippingmethod');
+                    $shippingAddress
+                        ->setCountryId($country)
+                        ->setRegionId($state)
+                        ->setPostcode($postcode)
+                        ->setShippingMethod($method)
+                        ->setCollectShippingRates(true);
+                    $shippingAddress->save();
+                    $saveQuote = true;
+                }
+                if ($saveQuote)
+                    $quote->save();
+                return $this;
+            }
+        }
 	}
 	
 	public function order_cancel_after(Varien_Event_Observer $observer) {
