@@ -33,12 +33,13 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
         $session = Mage::getSingleton('checkout/session');
         $order = Mage::getSingleton('sales/order');
         $order = $order->loadByIncrementId($quote->getReservedOrderId());
-	$order->getSendConfirmation(null);
-	$order->sendNewOrderEmail();
+        $order->getSendConfirmation(null);
+        $order->sendNewOrderEmail();
         $session->setLastOrderId($order->getId());
         $quote->setData('is_active', 0);
         $quote->save();
         $this->loadLayout();
+        Mage::dispatchEvent('checkout_onepage_controller_success_action', array('order_ids' => array($order->getId())));
         $this->renderLayout();
         $session->clear();
     }
@@ -52,12 +53,13 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
         $session = Mage::getSingleton('checkout/session');
         $order = Mage::getSingleton('sales/order');
         $order = $order->loadByIncrementId($quote->getReservedOrderId());
-	$order->getSendConfirmation(null);
-	$order->sendNewOrderEmail();
+        $order->getSendConfirmation(null);
+        $order->sendNewOrderEmail();
         $session->setLastOrderId($order->getId());
         $quote->setData('is_active', 0);
         $quote->save();
         $this->loadLayout();
+        Mage::dispatchEvent('checkout_onepage_controller_success_action', array('order_ids' => array($order->getId())));
         $this->renderLayout();
         $session->clear();
 	}
