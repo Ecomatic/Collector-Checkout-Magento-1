@@ -369,7 +369,7 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
         $result['success'] = true;
         $result['error']   = false;
         $order = Mage::getModel('sales/order')->loadByIncrementId($incrementId);
-        $order->setState('payment_review', true);
+        $order->setState('canceled', true);
         $order->save();
         $block = Mage::app()->getLayout()->getBlock('collectorbank_success');
         if ($block){//check if block actually exists
@@ -573,7 +573,7 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
 
         $order = Mage::getModel('sales/order')->loadByIncrementId($incrementId);
         $order->setData('is_iframe', 1);
-        $order->setState('payment_review', true);
+        $order->setState('canceled', true);
         $order->save();
         $block = Mage::app()->getLayout()->getBlock('collectorbank_success');
         if ($block){//check if block actually exists
