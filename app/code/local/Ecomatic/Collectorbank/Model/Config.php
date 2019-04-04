@@ -84,6 +84,11 @@ class Ecomatic_Collectorbank_Model_Config extends Varien_Object
         return Mage::getStoreConfig('ecomatic_collectorbank/general/username');
     }
 
+    public function getProfileName()
+    {
+        return Mage::getStoreConfig('ecomatic_collectorbank/general/profilename');
+    }
+
     public function getRegisterCustomer()
     {
         return Mage::getStoreConfig('ecomatic_collectorbank/general/register_customer');

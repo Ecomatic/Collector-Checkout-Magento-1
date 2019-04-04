@@ -28,7 +28,6 @@ class Ecomatic_Collectorbank_Block_Index extends Mage_Core_Block_Template {
 		if(isset($typeData)){
 			if($typeData['ctype'] == 'b2b'){
 				$dataVariant = 'data-variant="b2b" async';
-				
 			}
 		}
 		$session->setData('data_variant', $dataVariant);

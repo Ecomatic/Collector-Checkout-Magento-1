@@ -122,24 +122,29 @@ class Ecomatic_Ajax_CartController extends Mage_Checkout_CartController
         try {
             $codeLength = strlen($couponCode);
             $isCodeLengthValid = $codeLength && $codeLength <= Mage_Checkout_Helper_Cart::COUPON_CODE_MAX_LENGTH;
-
             $this->_getQuote()->getShippingAddress()->setCollectShippingRates(true);
             $this->_getQuote()->setCouponCode($isCodeLengthValid ? $couponCode : '')
                 ->collectTotals()
                 ->save();
-			if ($codeLength) {
-                if ($isCodeLengthValid && $couponCode == $this->_getQuote()->getCouponCode()) {
-                    $this->_getSession()->addSuccess(
-                        $this->__('Coupon code "%s" was applied.', Mage::helper('core')->escapeHtml($couponCode))
-                    );
-                    $this->_getSession()->setCartCouponCode($couponCode);
+            if ($this->_getQuote()->getGrandTotal() == 0){
+                $this->_getQuote()->setCouponCode('')->collectTotals()->save();
+                $this->_getSession()->addError($this->__("Can not reduce total price to 0"));
+            }
+            else {
+                if ($codeLength) {
+                    if ($isCodeLengthValid && $couponCode == $this->_getQuote()->getCouponCode()) {
+                        $this->_getSession()->addSuccess(
+                            $this->__('Coupon code "%s" was applied.', Mage::helper('core')->escapeHtml($couponCode))
+                        );
+                        $this->_getSession()->setCartCouponCode($couponCode);
+                    } else {
+                        $this->_getSession()->addError(
+                            $this->__('Coupon code "%s" is not valid.', Mage::helper('core')->escapeHtml($couponCode))
+                        );
+                    }
                 } else {
-                    $this->_getSession()->addError(
-                        $this->__('Coupon code "%s" is not valid.', Mage::helper('core')->escapeHtml($couponCode))
-                    );
+                    $this->_getSession()->addSuccess($this->__('Coupon code was canceled.'));
                 }
-            } else {
-                $this->_getSession()->addSuccess($this->__('Coupon code was canceled.'));
             }
 
         } catch (Mage_Core_Exception $e) {
