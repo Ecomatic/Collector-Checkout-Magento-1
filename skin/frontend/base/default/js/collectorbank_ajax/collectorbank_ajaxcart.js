@@ -426,13 +426,13 @@ function discountCoupon(coupon_form_url, isremove) {
             try {
                 window.collector.checkout.api.suspend();
             }
-            catch (err) {
-            }
+            catch (err) {}
         },
         success: function (data) {
             var result = data;
             //$('region_id').setAttribute('defaultValue', estimateRegionId);
             data_total_box = jQuery(result).find('div.cart').html();
+            console.log(data_total_box);
             jQuery('div.cart').html(data_total_box);
             //new RegionUpdater('country', 'region', 'region_id',region_json);
         },
@@ -442,8 +442,7 @@ function discountCoupon(coupon_form_url, isremove) {
             try {
                 window.collector.checkout.api.resume();
             }
-            catch (err) {
-            }
+            catch (err) {}
         },
     });
 }

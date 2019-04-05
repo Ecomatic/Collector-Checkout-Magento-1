@@ -14,9 +14,9 @@
                 <?php } else { ?>
                 <div class="button-wrapper">
                 <?php } ?>
-                    <button type="button" title="<?php echo $this->__('Apply') ?>" class="button2 apply" onclick="discountForm.submit(false)" value="<?php echo $this->__('Apply') ?>"><span><span><?php echo $this->__('Apply') ?></span></span></button>
+                    <button type="button" title="<?php echo $this->__('Apply') ?>" class="button2 apply" onclick="discountCoupon('<?php echo $this->getFormActionUrl() ?>', 0)" value="<?php echo $this->__('Apply') ?>"><span><span><?php echo $this->__('Apply') ?></span></span></button>
                     <?php if(strlen($this->getCouponCode())): ?>
-                        <button type="button" title="<?php $this->__('Cancel') ?>" class="button2 cancel-coupon" onclick="discountForm.submit(true)" value="<?php echo $this->__('Cancel') ?>"><span><span><?php echo $this->__('Cancel') ?></span></span>
+                        <button type="button" title="<?php $this->__('Cancel') ?>" class="button2 cancel-coupon" onclick="discountCoupon('<?php echo $this->getFormActionUrl() ?>', 1)" value="<?php echo $this->__('Cancel') ?>"><span><span><?php echo $this->__('Cancel') ?></span></span>
                         </button>
                     <?php endif;?>
                 </div>
@@ -40,67 +40,3 @@
 	</form>
 <?php endif;?>
 
-<script type="text/javascript">
-//<![CDATA[
-var discountForm = new VarienForm('discount-coupon-form');
-discountForm.submit = function (isRemove) {
-    if (isRemove) {
-        $('coupon_code').removeClassName('required-entry');
-        $('remove-coupone').value = "1";
-    } else {
-        $('coupon_code').addClassName('required-entry');
-        $('remove-coupone').value = "0";
-    }
-    return VarienForm.prototype.submit.bind(discountForm)();
-}
-//]]>
-
-
-jQuery(document).ready(function()
-{
-	jQuery("#discount-coupon-form").find('.button2').removeAttr('onclick');
-	jQuery("#discount-coupon-form").find('.button2.apply').on("click",function(){
-	   var coupon_form_url = jQuery("#discount-coupon-form").attr("action");
-	   if(coupon_form_url.search('checkout/cart/couponPost') != -1 )
-	   { 
-			isremove = jQuery("#remove-coupone").val();
-			discountCoupon(coupon_form_url,0);
-	   }
-	});
-	
-	jQuery("#discount-coupon-form").find('.button2.cancel-coupon').on("click",function(){
-	   var coupon_form_url = jQuery("#discount-coupon-form").attr("action");
-	   if(coupon_form_url.search('checkout/cart/couponPost') != -1 )
-	   {
-			isremove = jQuery("#remove-coupone").val();
-			discountCoupon(coupon_form_url,1);
-	   }
-	});
-	
-	
-	
-	jQuery('form input[type=checkbox]').on('change', function(e) {
-			if (jQuery(this).is(':checked')) {
-				var is_subscribed = 1;
-				jQuery('#subscription').val(1);
-			} else {
-				var is_subscribed = 0;
-				jQuery('#subscription').val(0);				 
-			}
-			
-			jQuery.ajax({
-				url:'<?php echo $this->getUrl('ajax/ajax/subscribe');?>',
-				type:'POST',
-				data: {
-					is_subscribed: is_subscribed,
-				},
-				success:function(data)
-				{
-				  var result = data;
-				
-				}
-			});
-	});
-	  
-});
-</script>
