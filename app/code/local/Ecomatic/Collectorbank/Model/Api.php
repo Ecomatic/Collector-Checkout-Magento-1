@@ -379,8 +379,31 @@ class Ecomatic_Collectorbank_Model_Api extends Mage_Core_Model_Abstract
 			$array["fees"]["directinvoicenotification"]["id"] = "INVOICE_FEE";
 			$array["fees"]["directinvoicenotification"]["description"] = "Invoice fee";
 			$array["fees"]["directinvoicenotification"]["unitPrice"] = round($invoiceFee,2);
-			$array["fees"]["directinvoicenotification"]["vat"] = round($invoicepercent,2);			
-			
+			$array["fees"]["directinvoicenotification"]["vat"] = round($invoicepercent,2);
+            if(Mage::getSingleton('customer/session')->isLoggedIn()){
+                $telephone = false;
+                $postalCode = false;
+                $email = Mage::getSingleton('customer/session')->getCustomer()->getEmail();
+                if (Mage::getSingleton('customer/session')->getCustomer()->getPrimaryShippingAddress()->getTelephone() !== null){
+                    $telephone = Mage::getSingleton('customer/session')->getCustomer()->getPrimaryShippingAddress()->getTelephone();
+                }
+                else if (Mage::getSingleton('customer/session')->getCustomer()->getPrimaryBillingAddress()->getTelephone() !== null){
+                    $telephone = Mage::getSingleton('customer/session')->getCustomer()->getPrimaryBillingAddress()->getTelephone();
+                }
+                if (Mage::getSingleton('customer/session')->getCustomer()->getPrimaryShippingAddress()->getPostcode() !== null){
+                    $postalCode = Mage::getSingleton('customer/session')->getCustomer()->getPrimaryShippingAddress()->getPostcode();
+                }
+                else if (Mage::getSingleton('customer/session')->getCustomer()->getPrimaryBillingAddress()->getPostcode() !== null){
+                    $postalCode = Mage::getSingleton('customer/session')->getCustomer()->getPrimaryBillingAddress()->getPostcode();
+                }
+                if ($email !== false && $postalCode !== false && $telephone !== false) {
+                    $array['customer'] = array(
+                        'email' => $email,
+                        'mobilePhoneNumber' => $telephone,
+                        'postalCode' => $postalCode,
+                    );
+                }
+            }
 			
 			$json = json_encode($array);
 			Mage::log('REQUEST -->'.$json, null,'cartiframe.log');	
