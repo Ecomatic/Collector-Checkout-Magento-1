@@ -561,6 +561,7 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
         }
         catch (Exception $e){
             Mage::log($e->getMessage(), null, $logFileName);
+            throw $e;
         }
         $incrementId = $service->getOrder()->getRealOrderId();
         Mage::getSingleton('checkout/session')->setLastOrderId($service->getOrder()->getId());
