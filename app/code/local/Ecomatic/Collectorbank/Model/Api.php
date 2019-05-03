@@ -404,13 +404,15 @@ class Ecomatic_Collectorbank_Model_Api extends Mage_Core_Model_Abstract
                     );
                 }
             }
+            if (!empty(Mage::getModel('collectorbank/config')->getProfileName())){
+                $array['profileName'] = Mage::getModel('collectorbank/config')->getProfileName();
+            }
 			
 			$json = json_encode($array);
 			Mage::log('REQUEST -->'.$json, null,'cartiframe.log');	
 			$hash = $pusername.":".hash("sha256",$json.$path.$psharedSecret);
 			$hashstr = 'SharedKey '.base64_encode($hash); 
-			
-			
+
 			$ch = curl_init($init.$path);
 			curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
 			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);

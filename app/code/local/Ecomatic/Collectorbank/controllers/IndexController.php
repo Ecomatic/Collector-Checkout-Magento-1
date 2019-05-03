@@ -431,7 +431,7 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
 			$scountry_id = "DE";
 		}
 		else {
-			$scountry_id = $orderDetails['customer']['countryCode'];
+			$scountry_id = $orderDetails['countryCode'];
 		}
 		if($orderDetails['customer']['billingAddress']['country'] == 'Sverige'){
 			$bcountry_id = "SE";
@@ -446,7 +446,7 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
 			$bcountry_id = "DE";
 		}
 		else {
-			$bcountry_id = $orderDetails['customer']['countryCode'];
+			$bcountry_id = $orderDetails['countryCode'];
 		}
 		$billingAddress = array(
 			'customer_address_id' => '',
@@ -678,9 +678,18 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
                 $quote->save();
             }
             else {
-                $this->loadLayout();
-                $this->renderLayout();
+                Mage::log("could not place order: " . $_GET['OrderNo'] . " quote does not exist", null, $logFile);
+                $return = array(
+                    'title' => $this->__("Could not place Order"),
+                    'message' => $this->__("Your Session Has Expired")
+                );
+                $this->getResponse()
+                    ->clearHeaders()
+                    ->setHeader('Content-tyope', 'application/json', true)
+                    ->setHeader('HTTP/1.0', 500, true)
+                    ->setBody(json_encode($return));
             }
+            $order = Mage::getModel('sales/order')->loadByIncrementId($_GET['OrderNo']);
             $return = array(
                 'orderReference' => $order->getIncrementId()
             );

@@ -79,10 +79,10 @@ class Ecomatic_Collectorbank_Model_Config extends Varien_Object
 		return "Collector Bank Payment";
 	}
 	
-	public function getBusinessUsername() 
-	{		
-        return Mage::getStoreConfig('ecomatic_collectorbank/general/username');
-    }
+	public function getBusinessUsername()
+{
+    return Mage::getStoreConfig('ecomatic_collectorbank/general/username');
+}
 
     public function getProfileName()
     {
