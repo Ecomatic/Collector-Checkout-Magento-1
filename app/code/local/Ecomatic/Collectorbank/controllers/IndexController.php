@@ -101,7 +101,7 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
                     $order->setState($pending, true);
                     $order->save();
                 }
-                else if ($orderDetails["purchase"]["result"] == "Preliminary"){
+                else if ($orderDetails["purchase"]["result"] == "Preliminary" || $orderDetails["purchase"]["result"] == "Activated"){
                     $auth = Mage::getStoreConfig('ecomatic_collectorbank/general/authorized_order_status');
                     $order->setState($auth, true);
                     $order->save();
