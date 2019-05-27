@@ -65,6 +65,7 @@ class Ecomatic_Collectorbank_Block_Index extends Mage_Core_Block_Template {
 	
 	public function getPublicTokeniFrame(){
 		$session = Mage::getSingleton('checkout/session');
+        $session->setSeenSuccess('0');
 		$typeData = $this->getTypeData();
 		$cart = Mage::getModel('checkout/cart')->getQuote();
 		$publicToken = '';

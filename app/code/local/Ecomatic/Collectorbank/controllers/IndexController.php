@@ -26,11 +26,13 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
 	
 	/* Redirection URL Action */	
 	public function bsuccessAction() {
-	    $quote = Mage::getSingleton('checkout/cart')->getQuote();
-        if ($quote->getId() == null){
+        $session = Mage::getSingleton('checkout/session');
+        if ($session->getSeenSuccess() == '1'){
+            $session->setSeenSuccess('0');
             return Mage::app()->getFrontController()->getResponse()->setRedirect(Mage::getBaseUrl());
         }
-        $session = Mage::getSingleton('checkout/session');
+        $session->setSeenSuccess('1');
+        $quote = Mage::getSingleton('checkout/cart')->getQuote();
         $order = Mage::getSingleton('sales/order');
         $order = $order->loadByIncrementId($quote->getReservedOrderId());
         $order->getSendConfirmation(null);
@@ -46,11 +48,13 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
 	
 	/* Redirection URL Action */	
 	public function successAction() {
-        $quote = Mage::getSingleton('checkout/cart')->getQuote();
-        if ($quote->getId() == null){
+        $session = Mage::getSingleton('checkout/session');
+        if ($session->getSeenSuccess() == '1'){
+            $session->setSeenSuccess('0');
             return Mage::app()->getFrontController()->getResponse()->setRedirect(Mage::getBaseUrl());
         }
-        $session = Mage::getSingleton('checkout/session');
+        $session->setSeenSuccess('1');
+        $quote = Mage::getSingleton('checkout/cart')->getQuote();
         $order = Mage::getSingleton('sales/order');
         $order = $order->loadByIncrementId($quote->getReservedOrderId());
         $order->getSendConfirmation(null);
@@ -66,8 +70,10 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
 	
 	/* Notification URL Action */
 	public function notificationAction(){
+        $quote = Mage::getModel('sales/quote')->getCollection()->addFieldToFilter('entity_id', $_GET['OrderNo'])->getFirstItem();
+        $reservedOrderId = $quote->getReservedOrderId();
         if (isset($_GET['OrderNo']) && isset($_GET['InvoiceStatus'])){
-			$order = Mage::getModel('sales/order')->loadByIncrementId($_GET['OrderNo']);
+			$order = Mage::getModel('sales/order')->loadByIncrementId($reservedOrderId);
 			if ($order->getId()){
 				if ($_GET['InvoiceStatus'] == "0"){
 					$pending = Mage::getStoreConfig('ecomatic_collectorbank/general/pending_order_status');
@@ -89,9 +95,8 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
 			}
 		}
 		if (isset($_GET['OrderNo']) && !isset($_GET['InvoiceStatus'])){
-			$order = Mage::getModel('sales/order')->loadByIncrementId($_GET['OrderNo']);
+			$order = Mage::getModel('sales/order')->loadByIncrementId($reservedOrderId);
             if ($order->getId()){
-                $quote = Mage::getModel('sales/quote')->getCollection()->addFieldToFilter('reserved_order_id', $_GET['OrderNo'])->getFirstItem();
                 $btype = $quote->getData('coll_customer_type');
                 $privId = $quote->getData('coll_purchase_identifier');
                 $resp = $this->getResp($privId, $btype);
@@ -369,8 +374,10 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
         $result['success'] = true;
         $result['error']   = false;
         $order = Mage::getModel('sales/order')->loadByIncrementId($incrementId);
-        $order->setState('canceled', true);
+        $order->setState('pending_payment', true);
         $order->save();
+        $quote->setReservedOrderId($order->getIncrementId());
+        $quote->save();
         $block = Mage::app()->getLayout()->getBlock('collectorbank_success');
         if ($block){//check if block actually exists
             if ($order->getId()) {
@@ -386,7 +393,8 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
             }
         }
         Mage::dispatchEvent('checkout_onepage_controller_success_action', array('order_ids' => array($order->getId())));
-		Mage::log('----------------- END ------------------------------- ', null, $logFileName);		
+		Mage::log('----------------- END ------------------------------- ', null, $logFileName);
+		return $order;
 	}
 	
 	public function createB2COrder($quote, $orderData, $privateId, $orderId){
@@ -556,13 +564,7 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
             $quote->setCheckoutMethod(Mage_Sales_Model_Quote::CHECKOUT_METHOD_GUEST);
         }
         $service = Mage::getModel('sales/service_quote', $quote);
-        try {
-            $service->submitAll();
-        }
-        catch (Exception $e){
-            Mage::log($e->getMessage(), null, $logFileName);
-            throw $e;
-        }
+        $service->submitAll();
         $incrementId = $service->getOrder()->getRealOrderId();
         Mage::getSingleton('checkout/session')->setLastOrderId($service->getOrder()->getId());
         $quote->setData('is_active', 1);
@@ -574,8 +576,10 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
 
         $order = Mage::getModel('sales/order')->loadByIncrementId($incrementId);
         $order->setData('is_iframe', 1);
-        $order->setState('canceled', true);
+        $order->setState('pending_payment', true);
         $order->save();
+        $quote->setReservedOrderId($order->getIncrementId());
+        $quote->save();
         $block = Mage::app()->getLayout()->getBlock('collectorbank_success');
         if ($block){//check if block actually exists
                 if ($order->getId()) {
@@ -592,9 +596,12 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
         }
         Mage::dispatchEvent('checkout_onepage_controller_success_action', array('order_ids' => array($order->getId())));
 		Mage::log('----------------- END ------------------------------- ', null, $logFileName);
+        return $order;
 	}
 
 	public function getResp($privId, $btype){
+	    $logFile = "collector.log";
+        Mage::log("Retrieving information from collector for private id: " . $privId, null, $logFile);
 		$init = Mage::getModel('collectorbank/config')->getInitializeUrl();
 		if($privId){
 			if(isset($btype)){
@@ -621,7 +628,8 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
 			$hash = $pusername.":".hash("sha256",$path.$psharedSecret);
 			$hashstr = 'SharedKey '.base64_encode($hash);
 			
-			Mage::log('REQUEST >>> Private id is '.$privId .' with shared key --> '.$hashstr, null,'magentoorder.log');			
+			Mage::log('REQUEST >>> Private id is '.$privId .' with shared key --> '.$hashstr, null,'magentoorder.log');
+            Mage::log('REQUEST >>> Private id is '.$privId .' with shared key --> '.$hashstr, null,$logFile);
 
 			$ch = curl_init($init.$path);
 			curl_setopt($ch, CURLOPT_HTTPGET, 1);
@@ -631,6 +639,7 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
 
 			$output = curl_exec($ch);
 			Mage::log('RESPONSE >>> '.$output, null,'magentoorder.log');
+            Mage::log('RESPONSE >>> '.$output, null,$logFile);
 			$data = json_decode($output,true);
 			
 			if($data["data"]){
@@ -644,70 +653,128 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
 			}			
 			return $result;
 		}
+		else {
+		    return false;
+        }
 	}
 
 	public function validationAction(){
+	    $order = null;
+        $quote = Mage::getModel('sales/quote')->getCollection()->addFieldToFilter('entity_id', $_GET['OrderNo'])->getFirstItem();
+        $reservedOrderId = $quote->getReservedOrderId();
 	    $logFile = "collector.log";
-        $order = Mage::getModel('sales/order')->loadByIncrementId($_GET['OrderNo']);
-        $quote = Mage::getModel('sales/quote')->getCollection()->addFieldToFilter('reserved_order_id', $_GET['OrderNo'])->getFirstItem();
+        Mage::log("Received validation callback for order: " . $reservedOrderId, null, $logFile);
+        $order = Mage::getModel('sales/order')->loadByIncrementId($reservedOrderId);
         if ($order->getId()){
+            Mage::log("Removing old order: " . $reservedOrderId, null, $logFile);
             $tmpRegistry = Mage::registry('isSecureArea');
             if ($tmpRegistry != 1){
                 Mage::unregister('isSecureArea');
                 Mage::register('isSecureArea', 1);
             }
-            $order->delete();
+            foreach ($order->getItemsCollection() as $item)
+            {
+                $productId  = $item->getProductId();
+                $qty = (int)$item->getQtyOrdered();
+                $stockItem = Mage::getModel('cataloginventory/stock_item')->loadByProduct($productId);
+                $product_qty_before = (int)$stockItem->getQty();
+                $product_qty_after = (int)($product_qty_before + $qty);
+                $stockItem->setQty($product_qty_after);
+                if($product_qty_after > 0) {
+                    $stockItem->setIsInStock(1);
+                }
+                else{
+                    $stockItem->setIsInStock(0);
+                }
+                $stockItem->save();
+            }
+            $order->addStatusHistoryComment('Order was canceled, new order was created');
+            $order->setState('canceled', true);
+            $order->save();
+            $order->cancel();
             Mage::unregister('isSecureArea');
             Mage::register('isSecureArea', $tmpRegistry);
         }
         try {
             if ($quote->getId()) {
+                Mage::log("Quote exists for order: " . $reservedOrderId, null, $logFile);
                 $quote->setData('is_iframe', 1);
                 $quote->save();
                 $btype = $quote->getData('coll_customer_type');
                 $privId = $quote->getData('coll_purchase_identifier');
                 $resp = $this->getResp($privId, $btype);
-                if ($btype == 'b2b'){
-                    $this->createB2BOrder($quote, $resp, $privId, $_GET['OrderNo']);
+                if ($resp !== false) {
+                    if ($btype == 'b2b') {
+                        Mage::log("B2B for order: " . $reservedOrderId, null, $logFile);
+                        $order = $this->createB2BOrder($quote, $resp, $privId, $reservedOrderId);
+                    } else {
+                        Mage::log("B2C for order: " . $reservedOrderId, null, $logFile);
+                        $order = $this->createB2COrder($quote, $resp, $privId, $reservedOrderId);
+                    }
                 }
                 else {
-                    $this->createB2COrder($quote, $resp, $privId, $_GET['OrderNo']);
+                    Mage::log("Could not place order: " . $reservedOrderId . " quote does not have a private id", null, $logFile);
+                    $return = array(
+                        'title' => $this->__("Could not place Order"),
+                        'message' => $this->__("Your Session Has Expired")
+                    );
+                    $this->getResponse()
+                        ->clearHeaders()
+                        ->setHeader('Content-type', 'application/json', true)
+                        ->setHeader('HTTP/1.0', 500, true)
+                        ->setBody(json_encode($return));
                 }
                 $quote->setData('coll_customer_type', $btype);
                 $quote->setData('coll_purchase_identifier', $privId);
                 $quote->save();
             }
             else {
-                Mage::log("could not place order: " . $_GET['OrderNo'] . " quote does not exist", null, $logFile);
+                Mage::log("Could not place order: " . $reservedOrderId . " quote does not exist", null, $logFile);
                 $return = array(
                     'title' => $this->__("Could not place Order"),
                     'message' => $this->__("Your Session Has Expired")
                 );
                 $this->getResponse()
                     ->clearHeaders()
-                    ->setHeader('Content-tyope', 'application/json', true)
+                    ->setHeader('Content-type', 'application/json', true)
                     ->setHeader('HTTP/1.0', 500, true)
                     ->setBody(json_encode($return));
             }
-            $order = Mage::getModel('sales/order')->loadByIncrementId($_GET['OrderNo']);
-            $return = array(
-                'orderReference' => $order->getIncrementId()
-            );
-            $this->getResponse()
-                ->clearHeaders()
-                ->setHeader('Content-tyope', 'application/json', true)
-                ->setHeader('HTTP/1.0', 200, true)
-                ->setBody(json_encode($return));
+           // $order = Mage::getModel('sales/order')->loadByIncrementId($_GET['OrderNo']);
+            Mage::log("order get increment id: " . $order->getIncrementId(), null, $logFile);
+            if ($order->getIncrementId() == null){
+                Mage::log("Order does not have an ID: " . $reservedOrderId, null, $logFile);
+                $return = array(
+                    'title' => $this->__("Could not place Order"),
+                    'message' => $this->__("Please Try again")
+                );
+                $this->getResponse()
+                    ->clearHeaders()
+                    ->setHeader('Content-type', 'application/json', true)
+                    ->setHeader('HTTP/1.0', 500, true)
+                    ->setBody(json_encode($return));
+            }
+            else {
+                Mage::log("Order: " . $order->getIncrementId() . " was created successfully", null, $logFile);
+                $return = array(
+                    'orderReference' => $order->getIncrementId()
+                );
+                $this->getResponse()
+                    ->clearHeaders()
+                    ->setHeader('Content-type', 'application/json', true)
+                    ->setHeader('HTTP/1.0', 200, true)
+                    ->setBody(json_encode($return));
+            }
         }
         catch (Exception $e){
             Mage::log($e->getMessage(), null, $logFile);
             $return = array(
-                'title' => "Could not place Order",
+                'title' => $this->__("Could not place Order"),
                 'message' => $e->getMessage()
             );
             $this->getResponse()
                 ->clearHeaders()
-                ->setHeader('Content-tyope', 'application/json', true)
+                ->setHeader('Content-type', 'application/json', true)
                 ->setHeader('HTTP/1.0', 500, true)
                 ->setBody(json_encode($return));
         }

@@ -333,8 +333,8 @@ class Ecomatic_Collectorbank_Model_Api extends Mage_Core_Model_Abstract
 			$array['redirectPageUri'] = $this->getRedirectPageUri();
 		}
 		$array['merchantTermsUri'] = $this->getMerchantTermsUri();
-		$array['notificationUri'] = $this->getNotificationUri($nextOrderId);
-        $array['validationUri'] = $this->getValidationUri($nextOrderId);
+		$array['notificationUri'] = $this->getNotificationUri($cart->getId());
+        $array['validationUri'] = $this->getValidationUri($cart->getId());
 		$address =  $cart->getShippingAddress();
 		$selectedShipMethod = $address->getShippingMethod();
 
