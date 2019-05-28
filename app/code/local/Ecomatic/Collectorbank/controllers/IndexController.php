@@ -70,31 +70,38 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
 	
 	/* Notification URL Action */
 	public function notificationAction(){
-        $quote = Mage::getModel('sales/quote')->getCollection()->addFieldToFilter('entity_id', $_GET['OrderNo'])->getFirstItem();
-        $reservedOrderId = $quote->getReservedOrderId();
         if (isset($_GET['OrderNo']) && isset($_GET['InvoiceStatus'])){
-			$order = Mage::getModel('sales/order')->loadByIncrementId($reservedOrderId);
+            Mage::log('recived on hold callback for order: ' . $_GET['OrderNo'] . " InvoiceStatus: " . $_GET['InvoiceStatus'], null, 'collector.log');
+			$order = Mage::getModel('sales/order')->loadByIncrementId($_GET['OrderNo']);
 			if ($order->getId()){
+                Mage::log('on hold callback order exists', null, 'collector.log');
 				if ($_GET['InvoiceStatus'] == "0"){
+                    Mage::log('on hold callback set status 0', null, 'collector.log');
 					$pending = Mage::getStoreConfig('ecomatic_collectorbank/general/pending_order_status');
 					$order->setState($pending, true);
 					$order->save();
 				}
 				else if ($_GET['InvoiceStatus'] == "1"){
+                    Mage::log('on hold callback set status 1', null, 'collector.log');
 					$auth = Mage::getStoreConfig('ecomatic_collectorbank/general/authorized_order_status');
 					$order->setState($auth, true);
 					$order->save();
 				}
 				else {
+                    Mage::log('on hold callback set status else', null, 'collector.log');
 					$denied = Mage::getStoreConfig('ecomatic_collectorbank/general/denied_order_status');
 					$order->setState($denied, true);
 					$order->save();
 				}
+                Mage::log('on hold callback set status pre loadlayout', null, 'collector.log');
 				$this->loadLayout();
 				$this->renderLayout();
 			}
+            Mage::log('on hold callback end', null, 'collector.log');
 		}
 		if (isset($_GET['OrderNo']) && !isset($_GET['InvoiceStatus'])){
+            $quote = Mage::getModel('sales/quote')->getCollection()->addFieldToFilter('entity_id', $_GET['OrderNo'])->getFirstItem();
+            $reservedOrderId = $quote->getReservedOrderId();
 			$order = Mage::getModel('sales/order')->loadByIncrementId($reservedOrderId);
             if ($order->getId()){
                 $btype = $quote->getData('coll_customer_type');
