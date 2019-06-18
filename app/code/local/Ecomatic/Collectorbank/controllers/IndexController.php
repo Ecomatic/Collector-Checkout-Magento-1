@@ -168,7 +168,7 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
                     $order->setFeeAmount($fee);
                     $order->setBaseFeeAmount($fee);
                     $order->setGrandTotal($order->getGrandTotal() + $fee);
-                    $order->setBaseGrandTotal($order->getBaseGrandTotal() + €fee);
+                    $order->setBaseGrandTotal($order->getBaseGrandTotal() + $fee);
                     $order->save();
                 }
                 $payment->save();
