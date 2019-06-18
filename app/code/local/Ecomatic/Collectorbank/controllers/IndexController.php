@@ -71,7 +71,7 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
 	/* Notification URL Action */
 	public function notificationAction(){
         if (isset($_GET['OrderNo']) && isset($_GET['InvoiceStatus'])){
-            Mage::log('recived on hold callback for order: ' . $_GET['OrderNo'] . " InvoiceStatus: " . $_GET['InvoiceStatus'], null, 'collector.log');
+            Mage::log('received on hold callback for order: ' . $_GET['OrderNo'] . " InvoiceStatus: " . $_GET['InvoiceStatus'], null, 'collector.log');
 			$order = Mage::getModel('sales/order')->loadByIncrementId($_GET['OrderNo']);
 			if ($order->getId()){
                 Mage::log('on hold callback order exists', null, 'collector.log');
@@ -100,13 +100,18 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
             Mage::log('on hold callback end', null, 'collector.log');
 		}
 		if (isset($_GET['OrderNo']) && !isset($_GET['InvoiceStatus'])){
+            Mage::log('received notification callback for order: ' . $_GET['OrderNo'], null, 'collector.log');
             $quote = Mage::getModel('sales/quote')->getCollection()->addFieldToFilter('entity_id', $_GET['OrderNo'])->getFirstItem();
             $reservedOrderId = $quote->getReservedOrderId();
 			$order = Mage::getModel('sales/order')->loadByIncrementId($reservedOrderId);
             if ($order->getId()){
+                Mage::log('notification callback order exists', null, 'collector.log');
                 $btype = $quote->getData('coll_customer_type');
+                Mage::log('notification callback btype: ' . $btype, null, 'collector.log');
                 $privId = $quote->getData('coll_purchase_identifier');
+                Mage::log('notification callback privId: ' . $privId, null, 'collector.log');
                 $resp = $this->getResp($privId, $btype);
+                Mage::log('notification callback resp: ' . json_encode($resp), null, 'collector.log');
                 $orderDetails = $resp['data'];
                 if ($orderDetails["purchase"]["result"] == "OnHold"){
                     $pending = Mage::getStoreConfig('ecomatic_collectorbank/general/pending_order_status');
