@@ -129,7 +129,6 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
                     $order->save();
                 }
                 $payment = $order->getPayment();
-
                 $response = $orderDetails;
                 $colpayment_method = "";
                 if (array_key_exists('paymentMethod', $response['purchase'])){
@@ -730,7 +729,7 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
                         'title' => $this->__("Could not place Order"),
                         'message' => $this->__("Your Session Has Expired")
                     );
-                    $this->getResponse()
+                    return $this->getResponse()
                         ->clearHeaders()
                         ->setHeader('Content-type', 'application/json', true)
                         ->setHeader('HTTP/1.0', 500, true)
@@ -746,7 +745,7 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
                     'title' => $this->__("Could not place Order"),
                     'message' => $this->__("Your Session Has Expired")
                 );
-                $this->getResponse()
+                return $this->getResponse()
                     ->clearHeaders()
                     ->setHeader('Content-type', 'application/json', true)
                     ->setHeader('HTTP/1.0', 500, true)
@@ -760,7 +759,7 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
                     'title' => $this->__("Could not place Order"),
                     'message' => $this->__("Please Try again")
                 );
-                $this->getResponse()
+                return $this->getResponse()
                     ->clearHeaders()
                     ->setHeader('Content-type', 'application/json', true)
                     ->setHeader('HTTP/1.0', 500, true)
@@ -771,7 +770,7 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
                 $return = array(
                     'orderReference' => $order->getIncrementId()
                 );
-                $this->getResponse()
+                return $this->getResponse()
                     ->clearHeaders()
                     ->setHeader('Content-type', 'application/json', true)
                     ->setHeader('HTTP/1.0', 200, true)
@@ -784,7 +783,7 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
                 'title' => $this->__("Could not place Order"),
                 'message' => $e->getMessage()
             );
-            $this->getResponse()
+            return $this->getResponse()
                 ->clearHeaders()
                 ->setHeader('Content-type', 'application/json', true)
                 ->setHeader('HTTP/1.0', 500, true)
