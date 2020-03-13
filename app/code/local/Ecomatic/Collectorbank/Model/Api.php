@@ -69,7 +69,18 @@ class Ecomatic_Collectorbank_Model_Api extends Mage_Core_Model_Abstract
                 }
 				$_product = Mage::getModel('catalog/product')->load($item->getProductId());
 				//$cartt["id"] = $item->getProductId();
-				$cartt["id"] = $item->getId().'/'.$item->getSku();
+                if (strlen($item->getId().'/'.$item->getSku()) > 50){
+                    if (strlen($item->getSku()) > 50){
+                        $articleId = $item->getId();
+                    }
+                    else {
+                        $articleId = $item->getSku();
+                    }
+                }
+                else {
+                    $articleId = $item->getId().'/'.$item->getSku();
+                }
+				$cartt["id"] = $articleId;
 				$cartt["description"] = $item->getName();
 				if ($item->getParentItemId() && $item->getPriceInclTax() == 0 && $item->getParentItem()->getProductType() != 'bundle') {
 					$cartt["unitPrice"] = round($item->getParentItem()->getPriceInclTax(),2);
