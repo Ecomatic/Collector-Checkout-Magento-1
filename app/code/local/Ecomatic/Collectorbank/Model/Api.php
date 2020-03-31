@@ -415,7 +415,7 @@ class Ecomatic_Collectorbank_Model_Api extends Mage_Core_Model_Abstract
                     );
                 }
             }
-            if (!empty(Mage::getModel('collectorbank/config')->getProfileName())){
+            if (Mage::getModel('collectorbank/config')->getProfileName()){
                 $array['profileName'] = Mage::getModel('collectorbank/config')->getProfileName();
             }
 			
