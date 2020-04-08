@@ -241,4 +241,12 @@
             </collectorbank_invoice>
          </payment>
     </default>
+    <crontab>
+        <jobs>
+            <collector_delete_orders>
+                <schedule><cron_expr>* * * * *</cron_expr></schedule>
+                <run><model>collectorbank/observer::deleteOrders</model></run>
+            </collector_delete_orders>
+        </jobs>
+    </crontab>
 </config>

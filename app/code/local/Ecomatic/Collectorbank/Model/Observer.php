@@ -70,4 +70,20 @@ class Ecomatic_Collectorbank_Model_Observer {
         Mage::register('current_invoice', $invoice);
     }
 
+    public function deleteOrders(){
+        $order_collection = Mage::getModel('sales/order')->getCollection()->addFieldToFilter('status', array('eq' => 'pending_payment'))->addFieldToFilter('created_at', ['to' => new \Zend_Db_Expr('DATE_ADD(NOW(), INTERVAL -5 HOUR)')]);;
+        foreach ($order_collection as $order){
+            $method = $order->getPayment()->getMethodInstance()->getCode();
+            if (strpos($method, 'collector') !== false){
+                Mage::log("deleted order: " . $order->getIncrementId() . " due to not reciving notificaion callback", null, 'collector.log');
+                try {
+                    $order->delete();
+                }
+                catch (Exception $e){
+                    Mage::log("could not delete order: " . $order->getIncrementId() . " " . $e->getMessage(), null, 'collector.log');
+                }
+            }
+        }
+    }
+
 }
