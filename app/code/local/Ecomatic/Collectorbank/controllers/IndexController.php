@@ -714,6 +714,60 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
                 $btype = $quote->getData('coll_customer_type');
                 $privId = $quote->getData('coll_purchase_identifier');
                 $resp = $this->getResp($privId, $btype);
+                foreach ($quote->getAllItems() as $quoteItem){
+                    if ($quoteItem->getProductType() == 'bundle' || $quoteItem->getProductType() == 'configurable'){
+                        continue;
+                    }
+                    $found = false;
+                    foreach ($resp['data']['cart']['items'] as $colItem){
+                        if ($colItem['id'] == 'discount'){
+                            if ($colItem['description'] == 'Applied discount amount'){
+                                if ($quote->getTotals()['discount']->getValue() == $colItem['unitPrice']){
+                                    $found = true;
+                                }
+                            }
+                            else if ($colItem['description'] == $quote->getCouponCode()) {
+                                $found = true;
+                            }
+                        }
+                        else {
+                            if ($quoteItem->getParentItem() !== null) {
+                                if ($quoteItem->getParentItem()->getProductType() == 'configurable') {
+                                    $qty = $quoteItem->getParentItem()->getQty();
+                                } else {
+                                    $qty = $quoteItem->getQty();
+                                }
+                            } else {
+                                $qty = $quoteItem->getQty();
+                            }
+                            if (strlen($quoteItem->getId() . '/' . $quoteItem->getSku()) > 50) {
+                                if (strlen($item->getSku()) > 50) {
+                                    $articleId = $quoteItem->getId();
+                                } else {
+                                    $articleId = $quoteItem->getSku();
+                                }
+                            } else {
+                                $articleId = $quoteItem->getId() . '/' . $quoteItem->getSku();
+                            }
+                            if (trim($articleId) == trim($colItem['id']) && $qty == $colItem['quantity']) {
+                                $found = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!$found){
+                        Mage::log("missmatch of products between magento and collector", null, $logFile);
+                        $return = array(
+                            'title' => __("Could not place Order"),
+                            'message' => __('Your cart has changed. Please refresh the page')
+                        );
+                        return $this->getResponse()
+                            ->clearHeaders()
+                            ->setHeader('Content-type', 'application/json', true)
+                            ->setHeader('HTTP/1.0', 500, true)
+                            ->setBody(json_encode($return));
+                    }
+                }
                 if ($resp !== false) {
                     if ($btype == 'b2b') {
                         Mage::log("B2B for order: " . $reservedOrderId, null, $logFile);

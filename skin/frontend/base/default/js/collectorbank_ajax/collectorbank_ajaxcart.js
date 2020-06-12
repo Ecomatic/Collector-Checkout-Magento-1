@@ -1,8 +1,10 @@
 jQuery(document).ready(function () {
     document.addEventListener('collectorCheckoutLocked', function (event) {
+        endis(true);
         disabled = true;
     });
     document.addEventListener('collectorCheckoutUnlocked', function (event) {
+        endis(false);
         disabled = false;
     });
     jQuery("#ajax_topcart").hide();
@@ -43,6 +45,15 @@ function displayTopCart() {
     clearInterval(timer);
     jQuery('#ajax_topcart').show();
     timer = setInterval(hidediv, 8000);
+}
+
+function endis (bool){
+    if (bool) {
+        jQuery('body').addClass('is-suspended');
+    }
+    else {
+        jQuery('body').removeClass('is-suspended');
+    }
 }
 
 function showcartloading() {
