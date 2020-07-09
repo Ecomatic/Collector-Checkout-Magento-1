@@ -113,18 +113,22 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
                 $resp = $this->getResp($privId, $btype);
                 Mage::log('notification callback resp: ' . json_encode($resp), null, 'collector.log');
                 $orderDetails = $resp['data'];
+                $status = "";
                 if ($orderDetails["purchase"]["result"] == "OnHold"){
                     $pending = Mage::getStoreConfig('ecomatic_collectorbank/general/pending_order_status');
+                    $status = $pending;
                     $order->setState($pending, true);
                     $order->save();
                 }
                 else if ($orderDetails["purchase"]["result"] == "Preliminary" || $orderDetails["purchase"]["result"] == "Activated"){
                     $auth = Mage::getStoreConfig('ecomatic_collectorbank/general/authorized_order_status');
+                    $status = $auth;
                     $order->setState($auth, true);
                     $order->save();
                 }
                 else {
                     $denied = Mage::getStoreConfig('ecomatic_collectorbank/general/denied_order_status');
+                    $status = $denied;
                     $order->setState($denied, true);
                     $order->save();
                 }
@@ -175,7 +179,7 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
                 $order = $payment->getOrder();
                 if ($order->getState() == Mage_Sales_Model_Order::STATE_PENDING_PAYMENT) {
                     $comment = Mage::helper('collectorbank')->__('Collector authorization successful');
-                    $order->addStatusToHistory($this->getConfigData('order_status'), $comment)
+                    $order->addStatusToHistory($status, $comment)
                         ->setIsCustomerNotified(false)
                         ->save();
                 }
