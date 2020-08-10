@@ -184,6 +184,18 @@ class Ecomatic_Collectorbank_IndexController extends Mage_Core_Controller_Front_
                         ->save();
                 }
             }
+            else {
+                Mage::log('order: ' . $_GET['OrderNo'] . " does not exist", null, 'collector.log');
+                $return = array(
+                    'title' => $this->__("Could not Handle order"),
+                    'message' => $this->__("Order does not exist")
+                );
+                return $this->getResponse()
+                    ->clearHeaders()
+                    ->setHeader('Content-type', 'application/json', true)
+                    ->setHeader('HTTP/1.0', 500, true)
+                    ->setBody(json_encode($return));
+            }
         }
 	}
 	
