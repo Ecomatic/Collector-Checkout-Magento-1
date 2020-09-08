@@ -571,15 +571,15 @@ class Ecomatic_Collectorbank_Helper_Data extends Mage_Core_Helper_Abstract
         return $collectorInvoice->getPaymenReference();
     }
 	
-	public function getActivateRequest($payment) {
+	public function getActivateRequest($payment, $storeId = null) {
         $request = array(
-            'StoreId' => $this->getModuleConfig('general/store_id_b2c') ? $this->getModuleConfig('general/store_id_b2c') : null,
+            'StoreId' => $this->getModuleConfig('general/store_id_b2c', $storeId) ? $this->getModuleConfig('general/store_id_b2c', $storeId) : null,
             'CorrelationId' => $payment->getOrder()->getId(),
             'CountryCode' => $this->getCountryCode($payment->getOrder()->getStoreId()),
             'InvoiceNo' => $payment->getAdditionalInformation('collector_invoice_no'),
         );
         if($this->guessCustomerType($payment->getOrder()->getBillingAddress()) == "company") {
-            $request['StoreId'] = $this->getModuleConfig('general/store_id_b2b');
+            $request['StoreId'] = $this->getModuleConfig('general/store_id_b2b', $storeId);
         }
         // We don't want to send StoreId at all if it hasn't been set.
         if (!isset($request['StoreId']) || !$request['StoreId']) {

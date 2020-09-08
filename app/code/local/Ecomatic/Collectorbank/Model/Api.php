@@ -17,7 +17,7 @@ class Ecomatic_Collectorbank_Model_Api extends Mage_Core_Model_Abstract
 	
 	public function getBusinessRedirectPageUri(){
 		$getBaseUrl = Mage::getUrl();
-		$redirectionUrl = $getBaseUrl."collectorcheckout/index/bsuccess";	
+		$redirectionUrl = $getBaseUrl."collectorcheckout/index/bsuccess";
 		return $redirectionUrl;
 	}
 	
@@ -125,7 +125,6 @@ class Ecomatic_Collectorbank_Model_Api extends Mage_Core_Model_Abstract
 					$cartarray[] = $cartt;
 				}
 			}
-			
 			return $cartarray;
 		}
 	}
@@ -310,7 +309,6 @@ class Ecomatic_Collectorbank_Model_Api extends Mage_Core_Model_Abstract
 				$pstoreId = Mage::getModel('collectorbank/config')->getPrivateStoreId();
 				$array['storeId'] = $pstoreId;
 			}
-			
 		} else {
 			$pusername = trim(Mage::getModel('collectorbank/config')->getPrivateUsername());
 			$psharedSecret = trim(Mage::getModel('collectorbank/config')->getPrivateSecretkey());
@@ -330,14 +328,11 @@ class Ecomatic_Collectorbank_Model_Api extends Mage_Core_Model_Abstract
 		
 		$session = Mage::getSingleton('checkout/session');
 		$cart = Mage::getModel('checkout/cart')->getQuote();
-		
-		
+
 		$cart->reserveOrderId();
 		$nextOrderId = $cart->getReservedOrderId();
 		$array['reference'] = $nextOrderId;
-		
-		
-		
+
 		if($typeData['ctype'] == 'b2b'){
 			$array['redirectPageUri'] = $this->getBusinessRedirectPageUri();
 		} else {
@@ -371,7 +366,7 @@ class Ecomatic_Collectorbank_Model_Api extends Mage_Core_Model_Abstract
 			$shippingTaxClassId = Mage::getStoreConfig('tax/classes/shipping_tax_class');
 			$shippingTaxPercent = $this->getTaxByPercent($shippingTaxClassId);
 		 
-			$array["fees"]["shipping"]["id"] = $selectedShipMethod;
+			$array["fees"]["shipping"]["id"] = Mage::helper('collectorbank/data')->cutStringAt($selectedShipMethod, 50);
 			$array["fees"]["shipping"]["description"] = Mage::helper('collectorbank/data')->cutStringAt($sihpDesc, 50);
 			$array["fees"]["shipping"]["unitPrice"] = round($sihpInclTaxAmount,2);
 			$array["fees"]["shipping"]["vat"] = round($shippingTaxPercent,2);					

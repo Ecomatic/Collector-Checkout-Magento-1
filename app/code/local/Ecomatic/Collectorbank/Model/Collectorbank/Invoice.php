@@ -95,7 +95,7 @@ class Ecomatic_Collectorbank_Model_Collectorbank_Invoice extends Mage_Payment_Mo
         $shippingAddress = Mage::getSingleton('checkout/session')->getQuote()->getShippingAddress();
 
         if((!($shippingAddress->getdata('same_as_billing') == 1) && !$allowSeparate && !$this->isAdmin()) || (!$allowSeparate && $this->isAdmin() && !$this->validShippingAddressInAdmin())) {
-                return false;
+            return false;
         }
         return true;
     }
@@ -281,7 +281,7 @@ class Ecomatic_Collectorbank_Model_Collectorbank_Invoice extends Mage_Payment_Mo
 				}
 			}
 			else {
-				$request = $helper->getActivateRequest($payment);
+				$request = $helper->getActivateRequest($payment, $order->getStoreId());
 				$client = $helper->getSoapClient();
 				$headers = array();
 				$headers['Username'] = $helper->getUsername($payment->getOrder()->getStoreId());
